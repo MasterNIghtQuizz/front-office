@@ -102,16 +102,18 @@ export default function GamePage() {
             size="small"
             onClick={handleQuitRequest}
             sx={{
-              background: 'var(--error)',
-              color: 'white',
+              backgroundColor: '#FF4B5C !important',
+              color: 'white !important',
               borderRadius: 'var(--border-radius-sm)',
               fontWeight: 1000,
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               px: 3,
-              py: 0.8,
-              border: 'var(--border-main)',
+              py: 1,
+              border: '2px solid black',
+              zIndex: 10,
+              opacity: 1,
               '&:hover': {
-                background: '#d32f2f',
+                backgroundColor: '#d32f2f !important',
                 borderColor: 'black'
               }
             }}
