@@ -53,9 +53,11 @@ export interface Question {
   order_index: number;
   timer_seconds: number;
   quiz_id: string;
+  choices?: Choice[];
   createdAt: string;
   updatedAt: string;
 }
+
 
 export interface CreateQuestionRequest {
   label: string;

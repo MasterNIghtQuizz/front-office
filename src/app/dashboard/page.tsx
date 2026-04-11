@@ -8,6 +8,7 @@ import { AuthenticatedLayout } from '@/components/templates/AuthenticatedLayout'
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Quiz } from '@/types';
+import { Button } from '@/components/atoms/Button';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -27,42 +28,72 @@ export default function DashboardPage() {
 
   return (
     <AuthenticatedLayout>
-      <Box maxWidth="sm" mx="auto" pt={2} pb={10}>
-        <Typography variant="h4" fontWeight={800} mb={3}>
-          Sélection Quizz
+      <Box maxWidth="sm" mx="auto" pt={4} pb={12}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+          <Typography variant="h4" fontWeight={1000} sx={{ letterSpacing: -1 }}>
+            DASHBOARD
+          </Typography>
+          <Button
+            label="REJOINDRE UN QUIZ"
+            variant="outlined"
+            onClick={() => router.push('/join')}
+            sx={{
+              color: 'black',
+              borderColor: 'black',
+              borderWidth: '2px',
+              fontWeight: 1000,
+              borderRadius: 'var(--border-radius-sm)',
+              '&:hover': { borderWidth: '2px', background: '#f5f5f5' }
+            }}
+          />
+        </Box>
+
+        <Typography variant="overline" sx={{ fontWeight: 1000, mb: 2, display: 'block', color: 'black', opacity: 0.6 }}>
+          MES QUIZZ
         </Typography>
 
         {quizzes.length === 0 ? (
-          <Typography variant="body1" color="text.secondary" textAlign="center" mt={4}>
-            Aucun quiz trouvé. Créez-en un !
-          </Typography>
+          <Box sx={{ py: 10, textAlign: 'center', border: 'var(--border-main)', borderRadius: 'var(--border-radius-md)', borderStyle: 'dashed' }}>
+            <Typography variant="body1" sx={{ fontWeight: 800 }}>
+              AUCUN QUIZ CRÉÉ POUR LE MOMENT.
+            </Typography>
+          </Box>
         ) : (
-          quizzes.map((q) => (
-            <QuizCard
-              key={q.id}
-              title={q.title}
-              description={q.description || 'Appuyez pour voir plus'}
-              onClick={() => router.push(`/dashboard/${q.id}`)}
-            />
-          ))
+          <Box display="flex" flexDirection="column" gap={2}>
+            {quizzes.map((q) => (
+              <QuizCard
+                key={q.id}
+                title={q.title.toUpperCase()}
+                description={q.description?.toUpperCase() || 'AUCUNE DESCRIPTION'}
+                onClick={() => router.push(`/dashboard/${q.id}`)}
+              />
+            ))}
+          </Box>
         )}
       </Box>
-      <Fab 
-        color="primary" 
+
+      <Fab
+        color="primary"
         variant="extended"
         onClick={() => router.push('/create-quiz')}
         sx={{
           position: 'fixed',
-          bottom: 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          bottom: 32,
+          right: 32,
           px: 4,
-          fontWeight: 700,
-          boxShadow: '0px 4px 14px rgba(94, 79, 246, 0.4)'
+          background: 'black',
+          color: 'white',
+          borderRadius: 'var(--border-radius-sm)',
+          fontWeight: 1000,
+          border: 'var(--border-main)',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+          '&:hover': {
+            background: '#333'
+          }
         }}
       >
         <AddIcon sx={{ mr: 1 }} />
-        Créer un Quizz
+        CRÉER UN QUIZZ
       </Fab>
     </AuthenticatedLayout>
   );

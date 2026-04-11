@@ -1,49 +1,93 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Sober Theme - White & Black */
+  --primary: #121212;
+  --primary-dark: #000000;
+  --primary-light: #333333;
+  
+  --secondary: #121212;
+  --accent: #121212;
+  --success: #00BFA5;
+  --error: #FF4B5C;
+  --warning: #FFB800;
+  --info: #00B0FF;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  --bg-white: #FFFFFF;
+  --bg-gray: #FFFFFF;
+  --bg-dark: #FFFFFF;
+  --bg-dark-accent: #FFFFFF;
 
-html {
-  height: 100%;
-}
+  --text-primary: #121212;
+  --text-secondary: #000000;
+  --text-white: #FFFFFF;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 24px;
 
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-premium: none;
+  
+  --border-main: 2px solid #121212;
+  --border-thick: 3px solid #121212;
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+body {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.dark-theme {
+  --bg-gray: var(--bg-dark);
+  --text-primary: var(--text-white);
+  --bg-white: var(--bg-dark-accent);
+}
+
+/* Atomic Base Utility Classes */
+.card-atomic {
+  background: var(--bg-white);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.button-atomic {
+  border-radius: var(--border-radius-md);
+  font-weight: 700;
+  text-transform: none;
+  transition: all 0.2s ease;
+}
+
+.input-atomic {
+  background: var(--bg-gray);
+  border-radius: var(--border-radius-md);
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.input-atomic:focus-within {
+  border-color: var(--primary);
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-up {
+  animation: slideInUp 0.4s ease-out forwards;
 }

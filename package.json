@@ -16,7 +16,7 @@
     "@mui/material-nextjs": "^7.3.9",
     "axios": "^1.14.0",
     "jwt-decode": "^4.0.0",
-    "next": "16.2.1",
+    "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "zustand": "^5.0.12"
@@ -27,7 +27,7 @@
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.1",
+    "eslint-config-next": "16.2.3",
     "typescript": "^5"
   }
 }

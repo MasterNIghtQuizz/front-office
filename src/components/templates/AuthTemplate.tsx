@@ -1,8 +1,11 @@
-'use client';
 import React from 'react';
 import { Box, Container, Paper } from '@mui/material';
+import { Button } from '@/components/atoms/Button';
+import { useRouter } from 'next/navigation';
 
 export const AuthTemplate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const router = useRouter();
+
   return (
     <Box
       sx={{
@@ -10,11 +13,38 @@ export const AuthTemplate: React.FC<{ children: React.ReactNode }> = ({ children
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'background.default',
+        backgroundColor: 'white',
+        position: 'relative'
       }}
     >
-      <Container maxWidth="xs">
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
+      <Box sx={{ position: 'absolute', top: 24, left: 24 }}>
+        <Button
+          label="RETOUR"
+          variant="outlined"
+          onClick={() => router.push('/')}
+          sx={{
+            color: 'black',
+            borderColor: 'black',
+            fontWeight: 1000,
+            borderRadius: 'var(--border-radius-sm)',
+            borderWidth: '2px',
+            '&:hover': {
+              borderWidth: '2px',
+              background: '#f5f5f5'
+            }
+          }}
+        />
+      </Box>
+      <Container maxWidth="xs" className="animate-up">
+        <Paper
+          sx={{
+            p: 5,
+            borderRadius: 'var(--border-radius-md)',
+            border: 'var(--border-thick)',
+            boxShadow: 'none',
+            background: 'white'
+          }}
+        >
           {children}
         </Paper>
       </Container>

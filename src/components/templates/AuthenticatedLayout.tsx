@@ -45,9 +45,9 @@ export const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ c
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: 'white' }}>
       <Header />
-      <Box component="main" sx={{ p: 2, maxWidth: '100vw', margin: '0 auto' }}>
+      <Box component="main" sx={{ pt: { xs: 8, sm: 10 }, px: 2, maxWidth: 1200, margin: '0 auto' }}>
         {children}
       </Box>
     </Box>

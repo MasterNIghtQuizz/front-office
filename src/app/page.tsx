@@ -19,7 +19,7 @@ export default function HomePage() {
     if (storedToken && !token) {
       setToken(storedToken);
     }
-  }, []);
+  }, [token, setToken]);
 
   return (
     <Box
@@ -29,88 +29,104 @@ export default function HomePage() {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        color: 'white',
+        background: 'white',
+        color: 'black',
         textAlign: 'center',
         p: 3
       }}
     >
-      <Container maxWidth="sm">
-        <Box mb={4} sx={{ filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.3))' }}>
-          <Image src="/logo.png" alt="NightQuizz Logo" width={120} height={120} style={{ borderRadius: 24 }} />
+      <Container maxWidth="sm" className="animate-up">
+        <Box mb={4}>
+          <Image src="/logo.png" alt="NightQuizz Logo" width={80} height={80} style={{ borderRadius: 8, border: 'var(--border-main)' }} />
         </Box>
         <Typography
-          variant="h2"
-          component="h1"
-          fontWeight={900}
-          sx={{ mb: 2, letterSpacing: '-0.05em', textShadow: '0 4px 10px rgba(0,0,0,0.2)' }}
+          variant="h1"
+          fontWeight={1000}
+          sx={{ 
+            mb: 2, 
+            letterSpacing: '-0.05em',
+            color: 'black',
+            textTransform: 'uppercase'
+          }}
         >
-          Night<Box component="span" color="secondary.main">Quizz</Box>
+          NightQuizz
         </Typography>
 
-        <Typography variant="h6" sx={{ mb: 6, fontWeight: 400, opacity: 0.9 }}>
-          La plateforme interactive ultime pour créer, animer et participer à des quiz en direct avec vos amis.
+        <Typography variant="h6" sx={{ mb: 6, fontWeight: 800, color: 'black', maxWidth: 500, mx: 'auto', textTransform: 'uppercase', letterSpacing: 1 }}>
+          La plateforme ultime pour créer et participer à des quiz en direct.
         </Typography>
 
         {mounted ? (
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" alignItems="center">
             {token ? (
               <Button
-                label="Accéder au Dashboard"
+                label="DASHBOARD"
                 size="large"
                 onClick={() => router.push('/dashboard')}
                 sx={{
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    bgcolor: 'grey.100',
-                    color: 'primary.dark',
-                  }
+                  background: 'black',
+                  color: 'white',
+                  px: 5,
+                  py: 2,
+                  borderRadius: 'var(--border-radius-sm)',
+                  fontWeight: 1000,
+                  border: 'var(--border-main)',
+                  '&:hover': { background: '#333' }
                 }}
               />
             ) : (
               <>
                 <Button
-                  label="Se connecter"
+                  label="CONNEXION"
                   size="large"
                   onClick={() => router.push('/login')}
                   sx={{
-                    bgcolor: 'white',
-                    color: 'primary.main',
+                    background: 'white',
+                    color: 'black',
                     px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      bgcolor: 'grey.100',
-                      color: 'primary.dark',
-                    }
+                    py: 2,
+                    borderRadius: 'var(--border-radius-sm)',
+                    fontWeight: 1000,
+                    border: 'var(--border-main)',
+                    '&:hover': { background: '#f5f5f5' }
                   }}
                 />
                 <Button
-                  label="Créer un compte"
+                  label="INSCRIPTION"
                   size="large"
-                  variant="outlined"
                   onClick={() => router.push('/register')}
                   sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255,255,255,0.5)',
+                    background: 'white',
+                    color: 'black',
                     px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      borderColor: 'white',
-                      bgcolor: 'rgba(255,255,255,0.1)',
-                    }
+                    py: 2,
+                    borderRadius: 'var(--border-radius-sm)',
+                    fontWeight: 1000,
+                    border: 'var(--border-main)',
+                    '&:hover': { background: '#f5f5f5' }
                   }}
                 />
               </>
             )}
+            <Button
+                label="REJOINDRE"
+                size="large"
+                onClick={() => router.push('/join')}
+                sx={{
+                  background: 'black',
+                  color: 'white',
+                  px: 4,
+                  py: 2,
+                  borderRadius: 'var(--border-radius-sm)',
+                  fontWeight: 1000,
+                  border: 'var(--border-main)',
+                  '&:hover': { background: '#333' }
+                }}
+              />
           </Stack>
+
         ) : (
-          <Box height={52} /> /* Placeholder avoiding Cumulative Layout Shift */
+          <Box height={52} />
         )}
       </Container>
     </Box>

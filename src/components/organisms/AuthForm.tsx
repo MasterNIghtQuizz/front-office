@@ -23,30 +23,41 @@ export const AuthForm: React.FC<AuthFormProps> = ({ title, isLogin = true, onSub
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h5" fontWeight={700} textAlign="center" mb={2}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Typography variant="h4" fontWeight={1000} textAlign="center" mb={4} sx={{ letterSpacing: -2, textTransform: 'uppercase' }}>
         {title}
       </Typography>
       <Input
-        label="Email"
+        label="EMAIL"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <Input
-        label="Mot de passe"
+        label="MOT DE PASSE"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
       <Button
-        label={isLogin ? 'Se connecter' : 'S\'inscrire'}
+        label={isLogin ? 'SE CONNECTER' : "S'INSCRIRE"}
         type="submit"
         disabled={loading}
         size="large"
-        sx={{ mt: 2 }}
+        sx={{ 
+          mt: 4, 
+          py: 2.5,
+          background: 'black', 
+          color: 'white',
+          borderRadius: 'var(--border-radius-sm)',
+          fontWeight: 1000,
+          border: 'var(--border-main)',
+          '&:hover': {
+            background: '#333'
+          }
+        }}
       />
     </Box>
   );

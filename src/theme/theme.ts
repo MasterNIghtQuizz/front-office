@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#5E4FF6', // Purple/Blue from design
+      main: '#000000ff',
     },
     secondary: {
       main: '#FF5757', // Red for buzzer

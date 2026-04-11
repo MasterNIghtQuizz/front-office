@@ -109,29 +109,36 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, 
   };
 
   return (
-    <Paper sx={{ p: 2, mb: 2, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+    <Paper sx={{ 
+      p: 4, 
+      mb: 3, 
+      borderRadius: 'var(--border-radius-md)', 
+      border: 'var(--border-thick)',
+      boxShadow: 'none',
+      background: 'white'
+    }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Box>
-          <Typography variant="subtitle1" fontWeight={600}>
+          <Typography variant="h6" fontWeight={1000} sx={{ textTransform: 'uppercase', letterSpacing: -1 }}>
             {question.order_index}. {question.label}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Type : {question.type} | Temps : {question.timer_seconds}s | {choices.length} choix
+          <Typography variant="caption" sx={{ fontWeight: 1000, color: 'black', opacity: 0.6, textTransform: 'uppercase' }}>
+            {question.type} • {question.timer_seconds}S • {choices.length} RÉPONSES
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" gap={0.5}>
+        <Box display="flex" alignItems="center" gap={1}>
           <Tooltip title="Voir les choix">
-            <IconButton onClick={() => setExpanded(!expanded)}>
-              <ExpandMoreIcon sx={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+            <IconButton onClick={() => setExpanded(!expanded)} sx={{ color: 'black' }}>
+              <ExpandMoreIcon sx={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: '0.2s', fontSize: '1.8rem' }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Modifier la question">
-            <IconButton size="small" onClick={() => setOpenEditQuestion(true)}>
+            <IconButton size="small" onClick={() => setOpenEditQuestion(true)} sx={{ color: 'black' }}>
               <EditIcon fontSize="small"/>
             </IconButton>
           </Tooltip>
           <Tooltip title="Supprimer la question">
-            <IconButton color="error" size="small" onClick={() => onDelete(question.id)}>
+            <IconButton size="small" onClick={() => onDelete(question.id)} sx={{ color: 'var(--error)' }}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -204,23 +211,42 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, 
         </Box>
       </Collapse>
 
-      <Dialog open={openEditQuestion} onClose={() => !editingQ && setOpenEditQuestion(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Modifier la Question</DialogTitle>
+      <Dialog 
+        open={openEditQuestion} 
+        onClose={() => !editingQ && setOpenEditQuestion(false)} 
+        fullWidth 
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 'var(--border-radius-md)', border: 'var(--border-thick)', p: 2, boxShadow: 'none' } }}
+      >
+        <DialogTitle sx={{ fontWeight: 1000, letterSpacing: -1 }}>MODIFIER LA QUESTION</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} pt={1}>
+          <Box display="flex" flexDirection="column" gap={3} pt={2}>
             <Input 
               label="Intitulé" 
               value={editLabel} 
               onChange={(e) => setEditLabel(e.target.value)} 
             />
-            <Typography variant="caption" color="text.secondary" fontWeight={600}>Type de question</Typography>
-            <Select size="small" value={editType} onChange={(e) => setEditType(e.target.value)} sx={{ borderRadius: 2 }}>
-               <MenuItem value="single">🎯 Choix unique (QCM)</MenuItem>
-               <MenuItem value="multiple">✅ Choix multiples (QCM)</MenuItem>
-               <MenuItem value="boolean">⚖️ Vrai / Faux</MenuItem>
-            </Select>
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 1000, mb: 1, display: 'block', textTransform: 'uppercase' }}>Type de question</Typography>
+              <Select 
+                size="small" 
+                fullWidth
+                value={editType} 
+                onChange={(e) => setEditType(e.target.value)} 
+                sx={{ 
+                  borderRadius: 'var(--border-radius-sm)', 
+                  border: 'var(--border-main)',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  fontWeight: 800
+                }}
+              >
+                 <MenuItem value="single">🎯 CHOIX UNIQUE (QCM)</MenuItem>
+                 <MenuItem value="multiple">✅ CHOIX MULTIPLES (QCM)</MenuItem>
+                 <MenuItem value="boolean">⚖️ VRAI / FAUX</MenuItem>
+              </Select>
+            </Box>
             <Input 
-              label="Temps (seconde)" 
+              label="Temps (secondes)" 
               type="number" 
               inputProps={{ min: 5, max: 120 }}
               value={editTimer} 
@@ -228,16 +254,33 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, 
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button label="Annuler" variant="text" onClick={() => setOpenEditQuestion(false)} disabled={editingQ} />
-          <Button label="Enregistrer" onClick={handleUpdateQuestion} disabled={editingQ || !editLabel.trim()} />
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <Button 
+            label="ANNULER" 
+            variant="outlined" 
+            onClick={() => setOpenEditQuestion(false)} 
+            disabled={editingQ} 
+            sx={{ border: 'var(--border-main)', color: 'black', '&:hover': { border: 'var(--border-main)', background: '#f5f5f5' } }}
+          />
+          <Button 
+            label="ENREGISTRER" 
+            onClick={handleUpdateQuestion} 
+            disabled={editingQ || !editLabel.trim()} 
+            sx={{ background: 'black', color: 'white', '&:hover': { background: '#333' } }}
+          />
         </DialogActions>
       </Dialog>
 
-      <Dialog open={!!editChoiceId} onClose={() => !editingC && setEditChoiceId(null)} fullWidth maxWidth="xs">
-        <DialogTitle>Modifier le Choix</DialogTitle>
+      <Dialog 
+        open={!!editChoiceId} 
+        onClose={() => !editingC && setEditChoiceId(null)} 
+        fullWidth 
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 'var(--border-radius-md)', border: 'var(--border-thick)', p: 2, boxShadow: 'none' } }}
+      >
+        <DialogTitle sx={{ fontWeight: 1000, letterSpacing: -1 }}>MODIFIER LE CHOIX</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} pt={1}>
+          <Box display="flex" flexDirection="column" gap={3} pt={2}>
             <Input 
               label="Texte du choix" 
               value={editChoiceText} 
@@ -245,14 +288,25 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, 
               autoFocus
             />
             <Box display="flex" alignItems="center" gap={1}>
-              <Checkbox checked={editChoiceCorrect} onChange={(e) => setEditChoiceCorrect(e.target.checked)} />
-              <Typography>Est-ce la bonne réponse ?</Typography>
+              <Checkbox checked={editChoiceCorrect} onChange={(e) => setEditChoiceCorrect(e.target.checked)} sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />
+              <Typography sx={{ fontWeight: 800 }}>EST-CE LA BONNE RÉPONSE ?</Typography>
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button label="Annuler" variant="text" onClick={() => setEditChoiceId(null)} disabled={editingC} />
-          <Button label="Enregistrer" onClick={handleUpdateChoice} disabled={editingC || !editChoiceText.trim()} />
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <Button 
+            label="ANNULER" 
+            variant="outlined" 
+            onClick={() => setEditChoiceId(null)} 
+            disabled={editingC} 
+            sx={{ border: 'var(--border-main)', color: 'black', '&:hover': { border: 'var(--border-main)', background: '#f5f5f5' } }}
+          />
+          <Button 
+            label="ENREGISTRER" 
+            onClick={handleUpdateChoice} 
+            disabled={editingC || !editChoiceText.trim()} 
+            sx={{ background: 'black', color: 'white', '&:hover': { background: '#333' } }}
+          />
         </DialogActions>
       </Dialog>
     </Paper>

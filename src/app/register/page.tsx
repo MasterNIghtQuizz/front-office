@@ -40,10 +40,10 @@ export default function RegisterPage() {
         onSubmit={handleRegister}
         loading={loading}
       />
-      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-      <Box mt={3} textAlign="center">
-        <Link component={NextLink} href="/login" variant="body2">
-          Déjà un compte ? Se connecter
+      {error && <Alert severity="error" sx={{ mt: 3, borderRadius: 'var(--border-radius-xs)', border: '1px solid var(--error)', fontWeight: 800 }}>{error.toUpperCase()}</Alert>}
+      <Box mt={4} textAlign="center">
+        <Link component={NextLink} href="/login" sx={{ color: 'black', fontWeight: 1000, textDecoration: 'underline', fontSize: '0.8rem', letterSpacing: 0.5 }}>
+          DÉJÀ UN COMPTE ? SE CONNECTER
         </Link>
       </Box>
     </AuthTemplate>

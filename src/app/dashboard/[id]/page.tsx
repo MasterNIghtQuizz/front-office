@@ -13,6 +13,8 @@ import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import { Quiz, Question, CreateQuestionRequest } from '@/types';
 import { QuestionCard } from '@/components/organisms/QuestionCard';
+import { useSession } from '@/store/useSession';
+
 
 export default function QuizDetailsPage() {
   const params = useParams();
@@ -28,6 +30,9 @@ export default function QuizDetailsPage() {
   const [newType, setNewType] = useState('single');
   const [newTimer, setNewTimer] = useState(15);
   const [adding, setAdding] = useState(false);
+
+  const { createSession, loading: sessionLoading } = useSession();
+
 
   const [openEditQuiz, setOpenEditQuiz] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -117,6 +122,20 @@ export default function QuizDetailsPage() {
     }
   };
 
+  const handleLaunchSession = async () => {
+    try {
+      await createSession(id);
+      const pk = useSession.getState().publicKey;
+      if (pk) {
+        router.push(`/game/${pk}`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+
   if (loading) return <AuthenticatedLayout><Box p={4} display="flex" justifyContent="center"><CircularProgress /></Box></AuthenticatedLayout>;
   if (!quiz) return <AuthenticatedLayout><Box p={4}><Typography>Quizz introuvable.</Typography></Box></AuthenticatedLayout>;
 
@@ -126,32 +145,49 @@ export default function QuizDetailsPage() {
         <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={3}>
           <Box display="flex" alignItems="center" gap={1}>
             <IconButton onClick={() => router.push('/dashboard')} sx={{ mt: -0.5 }}>
-              <ArrowBackIcon />
+              <ArrowBackIcon sx={{ color: 'black' }} />
             </IconButton>
             <Box>
-              <Typography variant="h4" fontWeight={800}>
+              <Typography variant="h4" fontWeight={1000} sx={{ letterSpacing: -1, textTransform: 'uppercase' }}>
                 {quiz.title}
               </Typography>
               {quiz.description && (
-                <Typography variant="body1" color="text.secondary" mt={0.5}>
+                <Typography variant="body2" sx={{ fontWeight: 800, mt: 0.5, textTransform: 'uppercase', opacity: 0.7 }}>
                   {quiz.description}
                 </Typography>
               )}
             </Box>
           </Box>
-          <Box display="flex" gap={0.5}>
+          <Box display="flex" gap={1} alignItems="center">
+            <Button
+              label="LANCER"
+              onClick={handleLaunchSession}
+              disabled={sessionLoading || questions.length === 0}
+              sx={{
+                background: 'black',
+                color: 'white',
+                px: 4,
+                borderRadius: 'var(--border-radius-sm)',
+                fontWeight: 1000,
+                border: 'var(--border-main)',
+                '&:hover': {
+                  background: '#333'
+                }
+              }}
+            />
             <Tooltip title="Modifier le Quiz">
               <IconButton size="small" onClick={() => { setEditTitle(quiz.title); setEditDesc(quiz.description || ''); setOpenEditQuiz(true); }}>
-                <EditIcon fontSize="small" />
+                <EditIcon fontSize="small" sx={{ color: 'black' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Supprimer le Quiz">
-              <IconButton color="error" size="small" onClick={handleDeleteQuiz}>
-                <DeleteIcon fontSize="small" />
+              <IconButton size="small" onClick={handleDeleteQuiz}>
+                <DeleteIcon fontSize="small" sx={{ color: 'var(--error)' }} />
               </IconButton>
             </Tooltip>
           </Box>
         </Box>
+
 
         <Typography variant="h6" fontWeight={700} mb={2}>
           Questions ({questions.length})
@@ -165,8 +201,16 @@ export default function QuizDetailsPage() {
           questions.map((q) => (
             <Box key={q.id} mb={2}>
               <Box display="flex" gap={1} mb={1}>
-                <Chip label={q.type === 'single' ? '🎯 Choix unique' : q.type === 'multiple' ? '✅ Choix multiples' : '⚖️ Vrai/Faux'} size="small" variant="outlined" />
-                <Chip label={`${q.timer_seconds}s`} size="small" variant="outlined" />
+                <Chip
+                  label={q.type === 'single' ? '🎯 CHOIX UNIQUE' : q.type === 'multiple' ? '✅ CHOIX MULTIPLES' : q.type === 'boolean' ? '⚖️ VRAI/FAUX' : '🚨 BUZZER'}
+                  size="small"
+                  sx={{ fontWeight: 1000, borderRadius: 'var(--border-radius-xs)', border: 'var(--border-main)', background: 'white' }}
+                />
+                <Chip
+                  label={`${q.timer_seconds}S`}
+                  size="small"
+                  sx={{ fontWeight: 1000, borderRadius: 'var(--border-radius-xs)', border: 'var(--border-main)', background: 'white' }}
+                />
               </Box>
               <QuestionCard
                 question={q}
@@ -179,31 +223,66 @@ export default function QuizDetailsPage() {
       </Box>
 
       <Fab
-        color="primary"
-        variant="extended"
         onClick={() => setOpenAdd(true)}
-        sx={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', px: 4, fontWeight: 700 }}
+        sx={{
+          position: 'fixed',
+          bottom: 40,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          px: 6,
+          py: 4,
+          background: 'black',
+          color: 'white',
+          borderRadius: 'var(--border-radius-sm)',
+          fontWeight: 1000,
+          border: 'var(--border-thick)',
+          boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+          zIndex: 1000,
+          '&:hover': { background: '#333' }
+        }}
+        variant="extended"
       >
         <AddIcon sx={{ mr: 1 }} />
-        Ajouter Question
+        AJOUTER UNE QUESTION
       </Fab>
 
-      <Dialog open={openAdd} onClose={() => !adding && setOpenAdd(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Nouvelle Question</DialogTitle>
+      <Dialog
+        open={openAdd}
+        onClose={() => !adding && setOpenAdd(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 'var(--border-radius-md)', border: 'var(--border-thick)', p: 2, boxShadow: 'none' } }}
+      >
+        <DialogTitle sx={{ fontWeight: 1000, letterSpacing: -1 }}>NOUVELLE QUESTION</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} pt={1}>
+          <Box display="flex" flexDirection="column" gap={3} pt={2}>
             <Input
               label="Intitulé de la question"
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               autoFocus
             />
-            <Typography variant="caption" color="text.secondary" fontWeight={600}>Type de question</Typography>
-            <Select size="small" value={newType} onChange={(e) => setNewType(e.target.value)} sx={{ borderRadius: 2 }}>
-              <MenuItem value="single">🎯 Choix unique (QCM)</MenuItem>
-              <MenuItem value="multiple">✅ Choix multiples (QCM)</MenuItem>
-              <MenuItem value="boolean">⚖️ Vrai / Faux</MenuItem>
-            </Select>
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 1000, mb: 1, display: 'block', textTransform: 'uppercase' }}>Type de question</Typography>
+              <Select
+                size="small"
+                fullWidth
+                value={newType}
+                onChange={(e) => setNewType(e.target.value as string)}
+                sx={{
+                  borderRadius: 'var(--border-radius-sm)',
+                  border: 'var(--border-main)',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  fontWeight: 800
+                }}
+              >
+                <MenuItem value="single">🎯 CHOIX UNIQUE (QCM)</MenuItem>
+                <MenuItem value="multiple">✅ CHOIX MULTIPLES (QCM)</MenuItem>
+                <MenuItem value="boolean">⚖️ VRAI / FAUX</MenuItem>
+                <MenuItem value="buzzer">🚨 MODE BUZZER</MenuItem>
+              </Select>
+            </Box>
+
             <Input
               label="Temps (secondes)"
               type="number"
@@ -213,16 +292,33 @@ export default function QuizDetailsPage() {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button label="Annuler" variant="text" onClick={() => setOpenAdd(false)} disabled={adding} />
-          <Button label="Créer" onClick={handleAddQuestion} disabled={adding || !newLabel.trim()} />
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <Button
+            label="ANNULER"
+            variant="outlined"
+            onClick={() => setOpenAdd(false)}
+            disabled={adding}
+            sx={{ border: 'var(--border-main)', color: 'black', '&:hover': { border: 'var(--border-main)', background: '#f5f5f5' } }}
+          />
+          <Button
+            label="CRÉER"
+            onClick={handleAddQuestion}
+            disabled={adding || !newLabel.trim()}
+            sx={{ background: 'black', color: 'white', '&:hover': { background: '#333' } }}
+          />
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openEditQuiz} onClose={() => !editingQuiz && setOpenEditQuiz(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Modifier le Quiz</DialogTitle>
+      <Dialog
+        open={openEditQuiz}
+        onClose={() => !editingQuiz && setOpenEditQuiz(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 'var(--border-radius-md)', border: 'var(--border-thick)', p: 2, boxShadow: 'none' } }}
+      >
+        <DialogTitle sx={{ fontWeight: 1000, letterSpacing: -1 }}>MODIFIER LE QUIZ</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} pt={1}>
+          <Box display="flex" flexDirection="column" gap={3} pt={2}>
             <Input
               label="Titre"
               value={editTitle}
@@ -237,11 +333,23 @@ export default function QuizDetailsPage() {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button label="Annuler" variant="text" onClick={() => setOpenEditQuiz(false)} disabled={editingQuiz} />
-          <Button label="Enregistrer" onClick={handleUpdateQuiz} disabled={editingQuiz || !editTitle.trim()} />
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <Button
+            label="ANNULER"
+            variant="outlined"
+            onClick={() => setOpenEditQuiz(false)}
+            disabled={editingQuiz}
+            sx={{ border: 'var(--border-main)', color: 'black', '&:hover': { border: 'var(--border-main)', background: '#f5f5f5' } }}
+          />
+          <Button
+            label="ENREGISTRER"
+            onClick={handleUpdateQuiz}
+            disabled={editingQuiz || !editTitle.trim()}
+            sx={{ background: 'black', color: 'white', '&:hover': { background: '#333' } }}
+          />
         </DialogActions>
       </Dialog>
     </AuthenticatedLayout>
-  );
+  )
 }
+
