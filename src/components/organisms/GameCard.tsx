@@ -5,7 +5,7 @@ import { Box, Typography, Grid } from '@mui/material';
 import { Question } from '@/types';
 import { ChoiceButton } from '@/components/atoms/ChoiceButton';
 import { BuzzerButton } from '@/components/atoms/BuzzerButton';
-import TimerIcon from '@mui/icons-material/Timer';
+import { Timer as TimerIcon } from '@mui/icons-material';
 import { useSession } from '@/store/useSession';
 
 interface GameCardProps {

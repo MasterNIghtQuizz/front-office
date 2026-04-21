@@ -7,8 +7,7 @@ import { Box, Container, Typography, CircularProgress, Paper, Fade } from '@mui/
 import { Button } from '@/components/atoms/Button';
 import { SessionLobby } from '@/components/organisms/SessionLobby';
 import { GameCard } from '@/components/organisms/GameCard';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { PlayArrow as PlayArrowIcon, NavigateNext as NavigateNextIcon } from '@mui/icons-material';
 
 export default function GamePage() {
   const { code } = useParams();
@@ -54,9 +53,6 @@ export default function GamePage() {
 
     const interval = setInterval(() => {
       fetchSession();
-      if (status === 'QUESTION_ACTIVE' || status === 'QUESTION_CLOSED') {
-        getCurrentQuestion();
-      }
     }, 3000);
 
     return () => clearInterval(interval);

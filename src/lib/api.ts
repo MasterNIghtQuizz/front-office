@@ -2,7 +2,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -88,12 +88,12 @@ api.interceptors.response.use(
         localStorage.removeItem('gameToken');
         // We only go to login if we explicitly see it's a user auth issue or if skip refresh
         if (!isGamePage) {
-           localStorage.removeItem('accessToken');
-           localStorage.removeItem('refreshToken');
-           window.location.href = '/login';
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
         } else {
-           // On game page, just go to join/home to retry
-           window.location.href = '/';
+          // On game page, just go to join/home to retry
+          window.location.href = '/';
         }
       } else {
         localStorage.clear();

@@ -21,6 +21,7 @@ interface SessionState {
   role: 'user' | 'moderator' | null;
   loading: boolean;
   error: string | null;
+  isFetching: boolean;
 
   setGameToken: (token: string | null) => void;
   createSession: (quizId: string) => Promise<void>;
@@ -39,6 +40,7 @@ interface SessionResponse {
   game_token: string;
   status: 'LOBBY' | 'QUESTION_ACTIVE' | 'QUESTION_CLOSED' | 'FINISHED';
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
+  current_question?: Question | null;
 }
 
 interface JoinResponse {
@@ -56,6 +58,7 @@ export const useSession = create<SessionState>((set, get) => ({
   role: null,
   loading: false,
   error: null,
+  isFetching: false,
 
   setGameToken: (token) => {
     if (token) {
@@ -114,19 +117,24 @@ export const useSession = create<SessionState>((set, get) => ({
   },
 
   fetchSession: async () => {
+    if (get().isFetching) return;
+    set({ isFetching: true });
     try {
       const res = await api.get<SessionResponse>('/sessions');
       set({
         sessionId: res.data.session_id,
         publicKey: res.data.public_key,
         status: res.data.status,
-        participants: res.data.participants
+        participants: res.data.participants,
+        currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion
       });
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 404) {
         get().reset();
       }
       throw err;
+    } finally {
+      set({ isFetching: false });
     }
   },
 
@@ -144,7 +152,6 @@ export const useSession = create<SessionState>((set, get) => ({
     try {
       await api.post('/sessions/next');
       await get().fetchSession();
-      await get().getCurrentQuestion();
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
         set({ status: 'FINISHED' });
