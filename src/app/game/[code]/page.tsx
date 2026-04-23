@@ -22,7 +22,7 @@ export default function GamePage() {
     startSession,
     nextQuestion,
     submitResponse,
-    reset,
+    quitSession,
     loading,
     role
   } = useSession();
@@ -67,8 +67,8 @@ export default function GamePage() {
     await nextQuestion();
   };
 
-  const handleFinish = () => {
-    reset();
+  const handleFinish = async () => {
+    await quitSession();
     router.push('/');
   };
 

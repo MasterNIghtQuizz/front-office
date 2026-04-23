@@ -67,6 +67,8 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
     }
   }
 
+  console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.headers);
+
   return config;
 });
 
@@ -74,6 +76,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (typeof window === 'undefined') return Promise.reject(error);
+
+    if (error.response?.status === 400) {
+      console.error('API 400 Bad Request:', error.response.data);
+    }
 
     if (error.response?.status === 401) {
       const isGamePage = window.location.pathname.startsWith('/game');

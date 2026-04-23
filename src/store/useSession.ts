@@ -35,6 +35,7 @@ interface SessionState {
   removeParticipant: (participantId: string) => void;
   getCurrentQuestion: () => Promise<void>;
   submitResponse: (choiceIds: string[]) => Promise<void>;
+  quitSession: () => Promise<void>;
   reset: () => void;
 }
 
@@ -216,6 +217,22 @@ export const useSession = create<SessionState>((set, get) => ({
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la soumission';
       set({ error: message || 'Erreur inconnue' });
+    }
+  },
+
+  quitSession: async () => {
+    try {
+      console.log('Leaving session...');
+      const res = await api.post('/sessions/leave', {});
+      console.log('Successfully left session:', res.data);
+    } catch (err) {
+      console.error('Error while leaving session:', err);
+      if (isAxiosError(err)) {
+        console.error('Response data:', err.response?.data);
+        console.error('Status:', err.response?.status);
+      }
+    } finally {
+      get().reset();
     }
   },
 

@@ -74,6 +74,7 @@ export const useSocket = create<SocketState>((set, get) => ({
 
         switch (type) {
           case 'user_online':
+            console.log('Received user_online:', payload);
             if (payload.userId && payload.userName) {
               sessionStore.addParticipant({
                 participant_id: payload.userId,
@@ -83,12 +84,13 @@ export const useSocket = create<SocketState>((set, get) => ({
             }
             break;
           case 'user_offline':
+            console.log('Received user_offline:', payload);
             if (payload.userId) {
               sessionStore.removeParticipant(payload.userId);
             }
             break;
           default:
-            // Handle other message types if needed
+            console.log('Received unhandled WS message type:', type, payload);
             break;
         }
       } catch (e) {
