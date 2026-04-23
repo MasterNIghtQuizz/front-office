@@ -51,11 +51,12 @@ export default function GamePage() {
 
     checkAndFetch();
 
-    const interval = setInterval(() => {
-      fetchSession();
-    }, 3000);
+    // Rafraichissement automatique des questions desactive temporairement
+    // const interval = setInterval(() => {
+    //   fetchSession();
+    // }, 3000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [code, fetchSession, getCurrentQuestion, router, status]);
 
   const handleStart = async () => {
