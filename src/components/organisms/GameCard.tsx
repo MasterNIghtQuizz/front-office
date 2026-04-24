@@ -17,18 +17,25 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState(question.timer_seconds);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-
-
-  const { role } = useSession();
+  const { role, activatedAt } = useSession();
   const isModerator = role === 'moderator';
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    if (!activatedAt) {
+      setTimeLeft(question.timer_seconds);
+      return;
+    }
+
+    const calculateTimeLeft = () => {
+      const elapsed = Math.floor((Date.now() - activatedAt) / 1000);
+      const remaining = Math.max(0, question.timer_seconds - elapsed);
+      setTimeLeft(remaining);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [activatedAt, question.timer_seconds]);
 
   const toggleChoice = (id: string) => {
     if (hasSubmitted || timeLeft <= 0 || isModerator) return;

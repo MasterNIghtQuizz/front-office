@@ -21,6 +21,7 @@ interface SessionState {
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
   participantId: string | null;
   role: 'user' | 'moderator' | null;
+  activatedAt: number | null;
   loading: boolean;
   error: string | null;
   isFetching: boolean;
@@ -46,6 +47,7 @@ interface SessionResponse {
   status: 'LOBBY' | 'QUESTION_ACTIVE' | 'QUESTION_CLOSED' | 'FINISHED';
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
   current_question?: Question | null;
+  activated_at?: number | null;
 }
 
 interface JoinResponse {
@@ -61,6 +63,7 @@ export const useSession = create<SessionState>((set, get) => ({
   participants: [],
   participantId: null,
   role: null,
+  activatedAt: null,
   loading: false,
   error: null,
   isFetching: false,
@@ -138,7 +141,8 @@ export const useSession = create<SessionState>((set, get) => ({
         publicKey: res.data.public_key,
         status: res.data.status,
         participants: res.data.participants,
-        currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion
+        currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion,
+        activatedAt: res.data.activated_at || null
       });
 
       // If we have a session but no websocket, connect it
@@ -245,7 +249,8 @@ export const useSession = create<SessionState>((set, get) => ({
       currentQuestion: null,
       participants: [],
       participantId: null,
-      role: null
+      role: null,
+      activatedAt: null
     });
   }
 }));
