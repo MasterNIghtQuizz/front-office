@@ -226,11 +226,11 @@ export default function QuizDetailsPage() {
         onClick={() => setOpenAdd(true)}
         sx={{
           position: 'fixed',
-          bottom: 40,
+          bottom: 50,
           left: '50%',
           transform: 'translateX(-50%)',
-          px: 6,
-          py: 4,
+          px: 8,
+          py: 5,
           background: 'black',
           color: 'white',
           borderRadius: 'var(--border-radius-sm)',

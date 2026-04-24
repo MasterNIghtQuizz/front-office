@@ -29,7 +29,14 @@ export default function DashboardPage() {
   return (
     <AuthenticatedLayout>
       <Box maxWidth="sm" mx="auto" pt={4} pb={12}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box 
+          display="flex" 
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between" 
+          alignItems={{ xs: 'flex-start', sm: 'center' }} 
+          mb={4}
+          gap={2}
+        >
           <Typography variant="h4" fontWeight={1000} sx={{ letterSpacing: -1 }}>
             DASHBOARD
           </Typography>
@@ -43,6 +50,7 @@ export default function DashboardPage() {
               borderWidth: '2px',
               fontWeight: 1000,
               borderRadius: 'var(--border-radius-sm)',
+              width: { xs: '100%', sm: 'auto' },
               '&:hover': { borderWidth: '2px', background: '#f5f5f5' }
             }}
           />
