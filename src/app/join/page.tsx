@@ -9,17 +9,10 @@ import { Button } from '@/components/atoms/Button';
 
 function JoinForm() {
   const searchParams = useSearchParams();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(searchParams.get('code') || '');
   const [nickname, setNickname] = useState('');
   const { joinSession, loading, error } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    const codeParam = searchParams.get('code');
-    if (codeParam) {
-      setCode(codeParam);
-    }
-  }, [searchParams]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
