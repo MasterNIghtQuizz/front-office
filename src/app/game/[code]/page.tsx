@@ -22,7 +22,7 @@ export default function GamePage() {
     startSession,
     nextQuestion,
     submitResponse,
-    reset,
+    quitSession,
     loading,
     role
   } = useSession();
@@ -51,11 +51,12 @@ export default function GamePage() {
 
     checkAndFetch();
 
-    const interval = setInterval(() => {
-      fetchSession();
-    }, 3000);
+    // Rafraichissement automatique des questions desactive temporairement
+    // const interval = setInterval(() => {
+    //   fetchSession();
+    // }, 3000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [code, fetchSession, getCurrentQuestion, router, status]);
 
   const handleStart = async () => {
@@ -66,8 +67,8 @@ export default function GamePage() {
     await nextQuestion();
   };
 
-  const handleFinish = () => {
-    reset();
+  const handleFinish = async () => {
+    await quitSession();
     router.push('/');
   };
 

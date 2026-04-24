@@ -3,6 +3,8 @@ import api from '@/lib/api';
 import { Question } from '@/types';
 import { isAxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { useSocket } from './useSocket';
+import { useAuth } from './useAuth';
 
 interface GameTokenPayload {
   sessionId: string;
@@ -29,8 +31,11 @@ interface SessionState {
   fetchSession: () => Promise<void>;
   startSession: () => Promise<void>;
   nextQuestion: () => Promise<void>;
+  addParticipant: (participant: { participant_id: string; nickname: string; role: string }) => void;
+  removeParticipant: (participantId: string) => void;
   getCurrentQuestion: () => Promise<void>;
   submitResponse: (choiceIds: string[]) => Promise<void>;
+  quitSession: () => Promise<void>;
   reset: () => void;
 }
 
@@ -88,6 +93,10 @@ export const useSession = create<SessionState>((set, get) => ({
       const { session_id, public_key, game_token } = res.data;
       get().setGameToken(game_token);
       set({ sessionId: session_id, publicKey: public_key, status: 'LOBBY' });
+      
+      // Connect WebSocket
+      const user = useAuth.getState().user;
+      useSocket.getState().connect(user?.email || 'moderator');
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la création de la session';
       set({ error: message || 'Erreur inconnue' });
@@ -107,6 +116,9 @@ export const useSession = create<SessionState>((set, get) => ({
       const { game_token } = res.data;
       get().setGameToken(game_token);
       await get().fetchSession();
+
+      // Connect WebSocket
+      useSocket.getState().connect(nickname);
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la jonction à la session';
       set({ error: message || 'Erreur inconnue' });
@@ -128,6 +140,18 @@ export const useSession = create<SessionState>((set, get) => ({
         participants: res.data.participants,
         currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion
       });
+
+      // If we have a session but no websocket, connect it
+      if (!useSocket.getState().isConnected) {
+        // We might need to guess the nickname if it's not in store, 
+        // but for now let's use a placeholder if needed, or better, 
+        // rely on the fact that joinSession/createSession handles it.
+        // If it's a page reload, we might need to find the participant nickname.
+        const me = res.data.participants.find(p => p.participant_id === get().participantId);
+        if (me) {
+          useSocket.getState().connect(me.nickname);
+        }
+      }
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 404) {
         get().reset();
@@ -141,7 +165,7 @@ export const useSession = create<SessionState>((set, get) => ({
   startSession: async () => {
     try {
       await api.post('/sessions/start');
-      await get().fetchSession();
+      // await get().fetchSession();
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors du démarrage';
       set({ error: message || 'Erreur inconnue' });
@@ -151,7 +175,7 @@ export const useSession = create<SessionState>((set, get) => ({
   nextQuestion: async () => {
     try {
       await api.post('/sessions/next');
-      await get().fetchSession();
+      // await get().fetchSession();
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
         set({ status: 'FINISHED' });
@@ -173,6 +197,20 @@ export const useSession = create<SessionState>((set, get) => ({
     }
   },
 
+  addParticipant: (participant) => {
+    const { participants } = get();
+    if (!participants.find((p) => p.participant_id === participant.participant_id)) {
+      set({ participants: [...participants, participant] });
+    }
+  },
+
+  removeParticipant: (participantId) => {
+    const { participants } = get();
+    set({
+      participants: participants.filter((p) => p.participant_id !== participantId),
+    });
+  },
+
   submitResponse: async (choiceIds) => {
     try {
       await api.post('/sessions/submit', { choiceIds });
@@ -182,8 +220,25 @@ export const useSession = create<SessionState>((set, get) => ({
     }
   },
 
+  quitSession: async () => {
+    try {
+      console.log('Leaving session...');
+      const res = await api.post('/sessions/leave', {});
+      console.log('Successfully left session:', res.data);
+    } catch (err) {
+      console.error('Error while leaving session:', err);
+      if (isAxiosError(err)) {
+        console.error('Response data:', err.response?.data);
+        console.error('Status:', err.response?.status);
+      }
+    } finally {
+      get().reset();
+    }
+  },
+
   reset: () => {
     localStorage.removeItem('gameToken');
+    useSocket.getState().disconnect();
     set({
       sessionId: null,
       publicKey: null,
