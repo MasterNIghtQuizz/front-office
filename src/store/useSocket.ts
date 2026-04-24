@@ -33,12 +33,30 @@ export const useSocket = create<SocketState>((set, get) => ({
     // We prefer gameToken for session-specific actions, but accessToken might be needed for the initial handshake if the gateway requires it
     // The gateway's hookAccessToken and hookGameToken should both be able to populate request.user
     
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (!baseUrl) {
-      console.error('NEXT_PUBLIC_API_URL is missing. Please define it in your environment variables.');
-    }
-    const wsBaseUrl = baseUrl ? baseUrl.replace(/^http/, 'ws') : 'ws://localhost:3010';
-    const wsUrl = `${wsBaseUrl}/ws`;
+    const getWebSocketUrl = () => {
+      const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+      
+      // If we are in the browser and the API URL is missing or looks like an internal K8s name
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        const isInternalK8sName = publicApiUrl && (publicApiUrl.includes('api-gateway') || !publicApiUrl.includes('.'));
+        
+        if (!publicApiUrl || isInternalK8sName) {
+          // If the frontend and backend share the same domain (common in Ingress setup)
+          // we fallback to the current origin.
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          // In production, we typically proxy /api to the gateway.
+          // If the WS is also proxied, we use the current host.
+          return `${protocol}//${window.location.host}/ws`;
+        }
+      }
+
+      const baseUrl = publicApiUrl || 'http://localhost:3010';
+      const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
+      return `${wsBaseUrl}/ws`;
+    };
+
+    const wsUrl = getWebSocketUrl();
     
     // Construct the URL with available tokens
     const params = new URLSearchParams();
