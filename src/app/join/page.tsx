@@ -1,17 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Box, Typography, Container, Alert } from '@mui/material';
 import { useSession } from '@/store/useSession';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/atoms/Input';
 import { Button } from '@/components/atoms/Button';
 
-export default function JoinPage() {
+function JoinForm() {
+  const searchParams = useSearchParams();
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState('');
   const { joinSession, loading, error } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    const codeParam = searchParams.get('code');
+    if (codeParam) {
+      setCode(codeParam);
+    }
+  }, [searchParams]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,5 +143,13 @@ export default function JoinPage() {
         </Box>
       </Container>
     </Box>
+  );
+}
+
+export default function JoinPage() {
+  return (
+    <Suspense fallback={null}>
+      <JoinForm />
+    </Suspense>
   );
 }

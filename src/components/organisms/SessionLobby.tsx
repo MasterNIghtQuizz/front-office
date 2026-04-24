@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Avatar } from '@mui/material';
+import { Box, Typography, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Button } from '../atoms/Button';
 
 interface SessionLobbyProps {
@@ -12,6 +12,7 @@ interface SessionLobbyProps {
 
 export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participants }) => {
   const [copied, setCopied] = React.useState(false);
+  const [showQr, setShowQr] = React.useState(false);
 
   const handleCopy = () => {
     if (!publicKey) return;
@@ -19,6 +20,12 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const joinUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/join?code=${publicKey}`
+    : '';
+
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={6} py={4}>
@@ -84,6 +91,7 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
             label="QR Code" 
             variant="contained" 
             size="medium" 
+            onClick={() => setShowQr(true)}
             sx={{ 
               borderRadius: 'var(--border-radius-sm)',
               background: 'black',
@@ -98,6 +106,46 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
           />
         </Box>
       </Box>
+
+      <Dialog 
+        open={showQr} 
+        onClose={() => setShowQr(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 'var(--border-radius-md)',
+            border: 'var(--border-thick)',
+            p: 2,
+            textAlign: 'center'
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 1000, letterSpacing: -1 }}>REJOINDRE LA PARTIE</DialogTitle>
+        <DialogContent>
+          <Box 
+            component="img" 
+            src={qrImageUrl} 
+            alt="Session QR Code"
+            sx={{ 
+              width: 250, 
+              height: 250, 
+              border: 'var(--border-main)', 
+              p: 1, 
+              bgcolor: 'white',
+              mb: 2
+            }}
+          />
+          <Typography variant="body2" sx={{ fontWeight: 800, textTransform: 'uppercase', opacity: 0.7 }}>
+            Scanner pour rejoindre directement
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button 
+            label="FERMER" 
+            onClick={() => setShowQr(false)} 
+            sx={{ background: 'black', color: 'white' }}
+          />
+        </DialogActions>
+      </Dialog>
 
       <Box width="100%" maxWidth={700} className="animate-up" sx={{ animationDelay: '0.1s' }}>
         <Box display="flex" justifyContent="center" alignItems="center" mb={5} gap={2}>
