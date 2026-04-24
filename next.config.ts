@@ -4,14 +4,12 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: 'standalone',
   async headers() {
-    // Generate a strong CSP string. Note: For Next.js in dev mode, 'unsafe-eval' is typically required.
-    // We restrict default-src, script-src, style-src, frame-src, and object-src to minimize attack surface.
     const cspHeader = `
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline';
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' blob: data:;
-      font-src 'self';
+      img-src 'self' blob: data: https://api.qrserver.com;
+      font-src 'self' https://fonts.gstatic.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
