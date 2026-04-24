@@ -36,7 +36,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       // We might want to keep the connection alive between page navigations (which is what store does)
       // but if the provider is at top level, unmount means app close or major layout change
     };
-  }, [token, user?.nickname, connect, disconnect, isConnected, isConnecting]);
+  }, [token, user, connect, disconnect, isConnected, isConnecting]);
 
   return (
     <SocketContext.Provider value={{ isConnected, isConnecting, error, sendMessage }}>

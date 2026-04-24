@@ -89,7 +89,7 @@ export const useSocket = create<SocketState>((set, get) => ({
 
     ws.onmessage = (event: MessageEvent) => {
       try {
-        const message: WebSocketMessage<any> = JSON.parse(event.data);
+        const message: WebSocketMessage<unknown> = JSON.parse(event.data);
         if (process.env.NODE_ENV === 'development') {
           console.log('WS Message type:', message.type);
         }
