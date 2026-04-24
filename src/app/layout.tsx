@@ -3,8 +3,54 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ThemeRegistry from '../theme/ThemeRegistry';
 
 export const metadata: Metadata = {
-  title: 'NightQuizz',
-  description: 'Interactive live quiz platform',
+  title: {
+    default: 'NightQuizz',
+    template: '%s | NightQuizz',
+  },
+  description: 'La plateforme ultime pour créer, animer et participer à des quiz interactifs en direct.',
+  keywords: ['quiz', 'live quiz', 'interactive', 'game', 'trivia', 'nightquizz', 'multiplayer'],
+  authors: [{ name: 'NightQuizz Team' }],
+  creator: 'NightQuizz',
+  publisher: 'NightQuizz',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: 'https://nightquizz.com',
+    siteName: 'NightQuizz',
+    title: 'NightQuizz - Créez et participez à des quiz en direct',
+    description: 'La plateforme ultime pour créer, animer et participer à des quiz interactifs en direct.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 800,
+        height: 800,
+        alt: 'NightQuizz Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NightQuizz - Live Interactive Quizzes',
+    description: 'La plateforme ultime pour créer et participer à des quiz en direct.',
+    images: ['/logo.png'],
+  },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+    shortcut: '/logo.png',
+  },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -14,7 +60,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, backgroundColor: '#F8F9FA' }}>
+      <body>
         <AppRouterCacheProvider>
           <ThemeRegistry>{children}</ThemeRegistry>
         </AppRouterCacheProvider>

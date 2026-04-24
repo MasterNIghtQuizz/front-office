@@ -33,8 +33,12 @@ export const useSocket = create<SocketState>((set, get) => ({
     // We prefer gameToken for session-specific actions, but accessToken might be needed for the initial handshake if the gateway requires it
     // The gateway's hookAccessToken and hookGameToken should both be able to populate request.user
     
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010';
-    const wsUrl = baseUrl.replace(/^http/, 'ws') + '/ws';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (!baseUrl) {
+      console.error('NEXT_PUBLIC_API_URL is missing. Please define it in your environment variables.');
+    }
+    const wsBaseUrl = baseUrl ? baseUrl.replace(/^http/, 'ws') : 'ws://localhost:3010';
+    const wsUrl = `${wsBaseUrl}/ws`;
     
     // Construct the URL with available tokens
     const params = new URLSearchParams();
@@ -67,14 +71,15 @@ export const useSocket = create<SocketState>((set, get) => ({
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        console.log('WS Message:', message);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('WS Message type:', message.type);
+        }
         
         const { type, payload } = message;
         const sessionStore = useSession.getState();
 
         switch (type) {
           case 'user_online':
-            console.log('Received user_online:', payload);
             if (payload.userId && payload.userName) {
               sessionStore.addParticipant({
                 participant_id: payload.userId,
@@ -84,17 +89,18 @@ export const useSocket = create<SocketState>((set, get) => ({
             }
             break;
           case 'user_offline':
-            console.log('Received user_offline:', payload);
             if (payload.userId) {
               sessionStore.removeParticipant(payload.userId);
             }
             break;
           default:
-            console.log('Received unhandled WS message type:', type, payload);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Received unhandled WS message type:', type);
+            }
             break;
         }
       } catch (e) {
-        console.error('Failed to parse WS message:', e);
+        console.error('Failed to parse WS message');
       }
     };
 

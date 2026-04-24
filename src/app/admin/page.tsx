@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
         </Paper>
 
         {tab === 0 ? (
-          <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+          <Paper sx={{ borderRadius: 3, overflowX: 'auto' }}>
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
@@ -162,7 +162,7 @@ export default function AdminDashboardPage() {
             </Table>
           </Paper>
         ) : (
-          <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+          <Paper sx={{ borderRadius: 3, overflowX: 'auto' }}>
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
@@ -195,7 +195,6 @@ export default function AdminDashboardPage() {
         )}
       </Box>
 
-      {/* Edit Role Dialog */}
       <Dialog open={!!editUser} onClose={() => setEditUser(null)}>
         <DialogTitle>Modifier le rôle </DialogTitle>
         <DialogContent>
