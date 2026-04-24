@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#000000ff',
+      main: '#000000',
     },
     secondary: {
       main: '#FF5757', // Red for buzzer
@@ -31,13 +31,22 @@ const theme = createTheme({
     borderRadius: 16,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#F8F9FA',
+          color: '#000000',
+          fontFamily: '"Inter", sans-serif',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
           padding: '12px 24px',
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(94, 79, 246, 0.2)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
           },
         },
       },
@@ -47,6 +56,13 @@ const theme = createTheme({
         root: {
           boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
           borderRadius: 20,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },

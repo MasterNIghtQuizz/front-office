@@ -222,14 +222,12 @@ export const useSession = create<SessionState>((set, get) => ({
 
   quitSession: async () => {
     try {
-      console.log('Leaving session...');
-      const res = await api.post('/sessions/leave', {});
-      console.log('Successfully left session:', res.data);
+      await api.post('/sessions/leave', {});
     } catch (err) {
-      console.error('Error while leaving session:', err);
       if (isAxiosError(err)) {
-        console.error('Response data:', err.response?.data);
-        console.error('Status:', err.response?.status);
+        console.error('Erreur lors du départ de la session', err.response?.status);
+      } else {
+        console.error('Erreur inattendue');
       }
     } finally {
       get().reset();

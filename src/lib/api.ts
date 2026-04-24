@@ -86,19 +86,15 @@ api.interceptors.response.use(
       const hasAccessToken = !!localStorage.getItem('accessToken');
 
       if (isGamePage && !hasAccessToken) {
-        // Participant got kicked out
         localStorage.removeItem('gameToken');
         window.location.href = '/join';
       } else if (hasAccessToken) {
-        // Host might have an issue with gameToken or accessToken
         localStorage.removeItem('gameToken');
-        // We only go to login if we explicitly see it's a user auth issue or if skip refresh
         if (!isGamePage) {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
         } else {
-          // On game page, just go to join/home to retry
           window.location.href = '/';
         }
       } else {
