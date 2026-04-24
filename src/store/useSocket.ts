@@ -39,17 +39,41 @@ export const useSocket = create<SocketState>((set, get) => ({
     const gameTokenNow = localStorage.getItem('gameToken');
 
     const getWebSocketUrl = () => {
-      if (typeof window === 'undefined') return 'ws://localhost:3010/ws';
+      const publicWsUrl = process.env.NEXT_PUBLIC_WS_URL;
+      if (publicWsUrl) return publicWsUrl;
 
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const hostname = window.location.hostname;
-      const port = window.location.port;
+      const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+      
+      // Client-side: If we're in the browser, we should try to use the current host
+      // especially if publicApiUrl is an internal K8s name like 'api-gateway'
+      if (typeof window !== 'undefined') {
+        const isInternalHost = publicApiUrl && (
+          publicApiUrl.includes('api-gateway') || 
+          publicApiUrl.includes('localhost') || 
+          publicApiUrl.includes('127.0.0.1')
+        );
 
-      if ((hostname === 'localhost' || hostname === '127.0.0.1') && !port) {
-        return `${protocol}//${hostname}:3010/ws`;
+        // If we have a public API URL and it's NOT an internal host, use it
+        if (publicApiUrl && !isInternalHost) {
+          const url = new URL(publicApiUrl);
+          const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+          return `${wsProtocol}//${url.host}/ws`;
+        }
+
+        // Fallback to current domain (BFF/Proxy pattern or same-domain deployment)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${protocol}//${window.location.host}/ws`;
       }
-      const host = port ? `${hostname}:${port}` : hostname;
-      return `${protocol}//${host}/ws`;
+
+      // Server-side fallback (SSR)
+      if (publicApiUrl && publicApiUrl.startsWith('http')) {
+        const url = new URL(publicApiUrl);
+        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${wsProtocol}//${url.host}/ws`;
+      }
+
+      // Default fallback
+      return 'ws://localhost:3010/ws';
     };
 
     const wsUrl = getWebSocketUrl();
@@ -59,17 +83,17 @@ export const useSocket = create<SocketState>((set, get) => ({
 
     const url = `${wsUrl}?${params.toString()}`;
 
-    console.log('Connecting to WebSocket...', { url });
+    console.debug('Connecting to WebSocket...', { url });
     const ws = new WebSocket(url);
     set({ socket: ws, connectTimeout: null });
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.debug('WebSocket connected');
       set({ isConnected: true, isConnecting: false, error: null });
     };
 
     ws.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
+      console.debug('WebSocket closed:', event.code, event.reason);
       const wasConnecting = get().isConnecting;
       set({ isConnected: false, socket: null, isConnecting: false });
 

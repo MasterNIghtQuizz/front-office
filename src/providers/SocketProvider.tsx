@@ -21,7 +21,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const isGamePage = pathname?.startsWith('/game');
-    console.log(`SocketProvider Debug: pathname="${pathname}", isGamePage=${isGamePage}, hasToken=${!!gameToken}`);
     
     if (isGamePage && gameToken) {
       if (!isConnected && !isConnecting) {
@@ -30,8 +29,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       }
     } else if (pathname && !isGamePage) {
       if (isConnected || isConnecting) {
-        console.log(`SocketProvider: Route "${pathname}" is not a game route. (Disconnect disabled for debug)`);
-        // disconnect(); // Temporarily disabled to test if connection succeeds
+        disconnect();
       }
     }
   }, [gameToken, pathname, connect, disconnect, isConnected, isConnecting, participants, participantId]);

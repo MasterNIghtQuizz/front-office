@@ -59,10 +59,15 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
+    const apiBase = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010';
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010'}/:path*`,
+        destination: `${apiBase}/:path*`,
+      },
+      {
+        source: '/ws',
+        destination: `${apiBase}/ws`,
       },
     ];
   },
