@@ -94,14 +94,17 @@ export default function GamePage() {
     }}>
       <Container maxWidth="md">
         <Box 
-          display={{ xs: 'flex', sm: 'grid' }}
-          gridTemplateColumns={{ sm: '1fr auto 1fr' }}
-          alignItems="center" 
-          mb={4} 
-          gap={2}
-          sx={{ flexWrap: 'wrap' }}
+          suppressHydrationWarning
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr auto', sm: '1fr auto 1fr' },
+            alignItems: 'center',
+            mb: 4,
+            gap: 2,
+            width: '100%'
+          }}
         >
-          <Box sx={{ order: { xs: 2, sm: 1 }, display: 'flex', justifyContent: 'flex-start' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
             <Button
               label="QUITTER"
               size="small"
@@ -112,11 +115,11 @@ export default function GamePage() {
                 borderRadius: 'var(--border-radius-sm)',
                 fontWeight: 1000,
                 fontSize: '0.75rem',
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 1,
                 border: '2px solid black',
                 opacity: 1,
-                minWidth: '100px',
+                minWidth: { xs: '80px', sm: '100px' },
                 '&:hover': {
                   backgroundColor: '#d32f2f !important',
                   borderColor: 'black'
@@ -132,16 +135,15 @@ export default function GamePage() {
               letterSpacing: -2,
               color: 'black',
               textTransform: 'uppercase',
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2.125rem' },
               textAlign: 'center',
-              order: { xs: 1, sm: 2 },
-              width: { xs: '100%', sm: 'auto' }
+              whiteSpace: 'nowrap'
             }}
           >
             NIGHT QUIZ
           </Typography>
 
-          <Box sx={{ order: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' }}>
             {status === 'QUESTION_ACTIVE' ? (
               <Box
                 sx={{
@@ -151,13 +153,14 @@ export default function GamePage() {
                   borderRadius: 'var(--border-radius-sm)',
                   color: 'white',
                   fontWeight: 1000,
-                  border: 'var(--border-main)'
+                  border: 'var(--border-main)',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {participants.length} JOUEURS
               </Box>
             ) : (
-              <Box sx={{ minWidth: { xs: 0, sm: '100px' } }} />
+              <Box sx={{ minWidth: '100px' }} />
             )}
           </Box>
         </Box>

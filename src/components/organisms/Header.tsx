@@ -11,22 +11,56 @@ export const Header: React.FC = () => {
 
   return (
     <AppBar position="fixed" sx={{ backgroundColor: 'white', color: 'black', boxShadow: 'none', borderBottom: 'var(--border-main)', zIndex: 1201 }}>
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
+      <Toolbar 
+        suppressHydrationWarning
+        sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr auto 1fr', 
+          alignItems: 'center',
+          minHeight: { xs: 64, sm: 72 } 
+        }}
+      >
+        <Box display="flex" justifyContent="flex-start">
+          <Typography
+            variant="h6"
+            onClick={() => router.push('/')}
+            sx={{ 
+              fontWeight: 1000, 
+              color: 'black', 
+              letterSpacing: -1, 
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              display: { xs: 'none', sm: 'block' },
+              fontSize: '0.9rem',
+              opacity: 0.5
+            }}
+          >
+            Dashboard
+          </Typography>
+        </Box>
+
         <Box
           display="flex"
           alignItems="center"
-          gap={1.5}
+          justifyContent="center"
           onClick={() => router.push('/')}
           sx={{ cursor: 'pointer' }}
         >
           <Typography
-            variant="h6"
-            sx={{ fontWeight: 1000, color: 'black', letterSpacing: -1, textTransform: 'uppercase' }}
+            variant="h5"
+            sx={{ 
+              fontWeight: 1000, 
+              color: 'black', 
+              letterSpacing: -2, 
+              textTransform: 'uppercase',
+              fontSize: { xs: '1.2rem', sm: '1.5rem' }
+            }}
           >
             NIGHT QUIZ
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" gap={2}>
+
+        <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
           <IconButton onClick={() => router.push('/profile')} size="small">
             <Avatar
               sx={{
