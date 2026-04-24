@@ -7,10 +7,11 @@ import { Button } from '../atoms/Button';
 interface SessionLobbyProps {
   publicKey: string;
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
+  participantId?: string | null;
   isModerator?: boolean;
 }
 
-export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participants }) => {
+export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participants, participantId }) => {
   const [copied, setCopied] = React.useState(false);
   const [showQr, setShowQr] = React.useState(false);
 
@@ -27,6 +28,8 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 
+  const myName = participants.find(p => p.participant_id === participantId)?.nickname || 'VOUS';
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={6} py={4}>
       <Box
@@ -39,8 +42,30 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
           borderRadius: 'var(--border-radius-md)',
           p: 6,
           border: 'var(--border-thick)',
+          position: 'relative'
         }}
       >
+        <Box 
+          sx={{ 
+            position: 'absolute', 
+            top: -20, 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+            background: 'black',
+            color: 'white',
+            px: 3,
+            py: 1,
+            borderRadius: 'var(--border-radius-sm)',
+            border: 'var(--border-main)',
+            whiteSpace: 'nowrap',
+            fontWeight: 1000,
+            fontSize: '0.8rem',
+            zIndex: 10
+          }}
+        >
+          CONNECTÉ : {myName.toUpperCase()}
+        </Box>
+
         <Typography 
           variant="overline" 
           sx={{ 
@@ -177,19 +202,21 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
                 px: 3,
                 py: 1.5,
                 borderRadius: 'var(--border-radius-sm)',
-                backgroundColor: 'white',
+                backgroundColor: p.participant_id === participantId ? 'black' : 'white',
+                color: p.participant_id === participantId ? 'white' : 'black',
                 border: 'var(--border-main)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1.5
+                gap: 1.5,
+                transition: 'all 0.3s ease'
               }}
             >
               <Avatar 
                 sx={{ 
                   width: 32, 
                   height: 32, 
-                  background: 'black', 
-                  color: 'white',
+                  background: p.participant_id === participantId ? 'white' : 'black', 
+                  color: p.participant_id === participantId ? 'black' : 'white',
                   fontSize: '0.8rem', 
                   fontWeight: 1000,
                   borderRadius: 'var(--border-radius-sm)'
@@ -197,7 +224,9 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
               >
                 {p.nickname.substring(0, 2).toUpperCase()}
               </Avatar>
-              <Typography fontWeight={1000}>{p.nickname.toUpperCase()}</Typography>
+              <Typography fontWeight={1000}>
+                {p.nickname.toUpperCase()} {p.participant_id === participantId && '(VOUS)'}
+              </Typography>
             </Box>
           ))}
         </Box>

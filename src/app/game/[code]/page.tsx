@@ -169,6 +169,7 @@ export default function GamePage() {
                 <SessionLobby
                   publicKey={publicKey || (code as string)}
                   participants={participants}
+                  participantId={useSession.getState().participantId}
                 />
 
                 {isModerator && (

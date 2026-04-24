@@ -108,6 +108,10 @@ export const useSocket = create<SocketState>((set, get) => ({
               sessionStore.removeParticipant(offlinePayload.userId);
             }
             break;
+          case 'session_started':
+          case 'session_next_question':
+            sessionStore.fetchSession();
+            break;
           default:
             if (process.env.NODE_ENV === 'development') {
               console.log('Received unhandled WS message type:', type);
