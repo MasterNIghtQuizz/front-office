@@ -94,14 +94,14 @@ export default function GamePage() {
     }}>
       <Container maxWidth="md">
         <Box 
-          display="flex" 
-          justifyContent="space-between" 
+          display={{ xs: 'flex', sm: 'grid' }}
+          gridTemplateColumns={{ sm: '1fr auto 1fr' }}
           alignItems="center" 
           mb={4} 
           gap={2}
-          flexWrap="wrap"
+          sx={{ flexWrap: 'wrap' }}
         >
-          <Box sx={{ order: { xs: 2, sm: 1 } }}>
+          <Box sx={{ order: { xs: 2, sm: 1 }, display: 'flex', justifyContent: 'flex-start' }}>
             <Button
               label="QUITTER"
               size="small"
@@ -133,30 +133,33 @@ export default function GamePage() {
               color: 'black',
               textTransform: 'uppercase',
               fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              flex: { xs: '1 0 100%', sm: '1' },
-              textAlign: { xs: 'left', sm: 'center' },
-              order: { xs: 1, sm: 2 }
+              textAlign: 'center',
+              order: { xs: 1, sm: 2 },
+              width: { xs: '100%', sm: 'auto' }
             }}
           >
             NIGHT QUIZ
           </Typography>
 
-          {status === 'QUESTION_ACTIVE' && (
-            <Box
-              sx={{
-                background: 'black',
-                px: 2,
-                py: 0.5,
-                borderRadius: 'var(--border-radius-sm)',
-                color: 'white',
-                fontWeight: 1000,
-                border: 'var(--border-main)',
-                order: 3
-              }}
-            >
-              {participants.length} JOUEURS
-            </Box>
-          )}
+          <Box sx={{ order: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            {status === 'QUESTION_ACTIVE' ? (
+              <Box
+                sx={{
+                  background: 'black',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 'var(--border-radius-sm)',
+                  color: 'white',
+                  fontWeight: 1000,
+                  border: 'var(--border-main)'
+                }}
+              >
+                {participants.length} JOUEURS
+              </Box>
+            ) : (
+              <Box sx={{ minWidth: { xs: 0, sm: '100px' } }} />
+            )}
+          </Box>
         </Box>
 
         <Fade in={true}>
