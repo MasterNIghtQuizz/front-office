@@ -22,6 +22,7 @@ interface SessionState {
   participantId: string | null;
   role: 'user' | 'moderator' | null;
   activatedAt: number | null;
+  hasAnswered: boolean;
   loading: boolean;
   error: string | null;
   isFetching: boolean;
@@ -33,6 +34,7 @@ interface SessionState {
   startSession: () => Promise<void>;
   nextQuestion: () => Promise<void>;
   addParticipant: (participant: { participant_id: string; nickname: string; role: string }) => void;
+  setParticipants: (participants: Array<{ participant_id: string; nickname: string; role: string }>) => void;
   removeParticipant: (participantId: string) => void;
   getCurrentQuestion: () => Promise<void>;
   submitResponse: (choiceIds: string[]) => Promise<void>;
@@ -48,22 +50,43 @@ interface SessionResponse {
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
   current_question?: Question | null;
   activated_at?: number | null;
+  has_answered?: boolean;
 }
 
 interface JoinResponse {
   game_token: string;
 }
 
+const getInitialState = () => {
+  if (typeof window === 'undefined') return { gameToken: null, participantId: null, role: null, sessionId: null };
+  const token = localStorage.getItem('gameToken');
+  if (!token) return { gameToken: null, participantId: null, role: null, sessionId: null };
+  try {
+    const decoded = jwtDecode<GameTokenPayload>(token);
+    return {
+      gameToken: token,
+      participantId: decoded.participantId,
+      role: decoded.role,
+      sessionId: decoded.sessionId
+    };
+  } catch (e) {
+    return { gameToken: token, participantId: null, role: null, sessionId: null };
+  }
+};
+
+const initialState = getInitialState();
+
 export const useSession = create<SessionState>((set, get) => ({
-  sessionId: null,
+  sessionId: initialState.sessionId,
   publicKey: null,
-  gameToken: null,
+  gameToken: initialState.gameToken,
   status: null,
   currentQuestion: null,
   participants: [],
-  participantId: null,
-  role: null,
+  participantId: initialState.participantId,
+  role: initialState.role,
   activatedAt: null,
+  hasAnswered: false,
   loading: false,
   error: null,
   isFetching: false,
@@ -90,16 +113,19 @@ export const useSession = create<SessionState>((set, get) => ({
   },
 
   createSession: async (quizId) => {
+    localStorage.removeItem('gameToken');
+    get().reset();
     set({ loading: true, error: null });
     try {
       const res = await api.post<SessionResponse>('/sessions', { quiz_id: quizId });
       const { session_id, public_key, game_token } = res.data;
       get().setGameToken(game_token);
       set({ sessionId: session_id, publicKey: public_key, status: 'LOBBY' });
-      
-      // Connect WebSocket
+
       const user = useAuth.getState().user;
       useSocket.getState().connect(user?.email || 'moderator');
+
+      await get().fetchSession();
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la création de la session';
       set({ error: message || 'Erreur inconnue' });
@@ -110,6 +136,8 @@ export const useSession = create<SessionState>((set, get) => ({
   },
 
   joinSession: async (publicKey, nickname) => {
+    localStorage.removeItem('gameToken');
+    get().reset();
     set({ loading: true, error: null });
     try {
       const res = await api.post<JoinResponse>('/sessions/join', {
@@ -133,29 +161,38 @@ export const useSession = create<SessionState>((set, get) => ({
 
   fetchSession: async () => {
     if (get().isFetching) return;
+
+    if (!get().gameToken && typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('gameToken');
+      if (storedToken) {
+        get().setGameToken(storedToken);
+      }
+    }
+
     set({ isFetching: true });
     try {
       const res = await api.get<SessionResponse>('/sessions');
+      const participantId = get().participantId;
+
+      const normalizedParticipants = res.data.participants.map(p => ({
+        ...p,
+        role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : p.role)
+      }));
+
+      const me = normalizedParticipants.find(p => p.participant_id === participantId);
+
       set({
         sessionId: res.data.session_id,
         publicKey: res.data.public_key,
         status: res.data.status,
-        participants: res.data.participants,
+        participants: normalizedParticipants,
         currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion,
-        activatedAt: res.data.activated_at || null
+        activatedAt: res.data.activated_at || get().activatedAt,
+        hasAnswered: res.data.has_answered ?? get().hasAnswered,
+        role: me ? (me.role as 'user' | 'moderator') : get().role
       });
 
-      // If we have a session but no websocket, connect it
-      if (!useSocket.getState().isConnected) {
-        // We might need to guess the nickname if it's not in store, 
-        // but for now let's use a placeholder if needed, or better, 
-        // rely on the fact that joinSession/createSession handles it.
-        // If it's a page reload, we might need to find the participant nickname.
-        const me = res.data.participants.find(p => p.participant_id === get().participantId);
-        if (me) {
-          useSocket.getState().connect(me.nickname);
-        }
-      }
+
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 404) {
         get().reset();
@@ -203,9 +240,22 @@ export const useSession = create<SessionState>((set, get) => ({
 
   addParticipant: (participant) => {
     const { participants } = get();
+
+    // Normalize role: HOST -> moderator, PLAYER -> user
+    const normalizedRole = participant.role === 'HOST' ? 'moderator' : (participant.role === 'PLAYER' ? 'user' : participant.role);
+    const normalizedParticipant = { ...participant, role: normalizedRole };
+
     if (!participants.find((p) => p.participant_id === participant.participant_id)) {
-      set({ participants: [...participants, participant] });
+      set({ participants: [...participants, normalizedParticipant] });
     }
+  },
+
+  setParticipants: (participants) => {
+    const normalized = participants.map(p => ({
+      ...p,
+      role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : (p.role || 'user'))
+    }));
+    set({ participants: normalized });
   },
 
   removeParticipant: (participantId) => {
@@ -216,13 +266,34 @@ export const useSession = create<SessionState>((set, get) => ({
   },
 
   submitResponse: async (choiceIds) => {
+    const { activatedAt, currentQuestion } = get();
+    if (currentQuestion && currentQuestion.timer_seconds) {
+      if (!activatedAt) {
+        set({ error: 'TEMPS ÉCOULÉ - Réponse refusée (Sync error)' });
+        return;
+      }
+      const now = Date.now();
+      const serverStart = activatedAt > 1000000000000 ? activatedAt : activatedAt * 1000;
+      const elapsed = (now - serverStart) / 1000;
+      if (elapsed > currentQuestion.timer_seconds + 0.5) {
+        set({ error: 'TEMPS ÉCOULÉ - Réponse refusée' });
+        return;
+      }
+    }
+
     try {
       await api.post('/sessions/submit', { choiceIds });
+      set({ hasAnswered: true });
     } catch (err) {
-      const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la soumission';
-      set({ error: message || 'Erreur inconnue' });
+      if (isAxiosError(err) && err.response?.status === 409) {
+        set({ hasAnswered: true, error: 'Vous avez déjà répondu à cette question.' });
+      } else {
+        const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la soumission';
+        set({ error: message || 'Erreur inconnue' });
+      }
     }
   },
+
 
   quitSession: async () => {
     try {
@@ -234,12 +305,13 @@ export const useSession = create<SessionState>((set, get) => ({
         console.error('Erreur inattendue');
       }
     } finally {
+      localStorage.removeItem('gameToken');
       get().reset();
     }
   },
 
+
   reset: () => {
-    localStorage.removeItem('gameToken');
     useSocket.getState().disconnect();
     set({
       sessionId: null,
@@ -250,7 +322,10 @@ export const useSession = create<SessionState>((set, get) => ({
       participants: [],
       participantId: null,
       role: null,
-      activatedAt: null
+      activatedAt: null,
+      hasAnswered: false,
+      error: null
     });
   }
+
 }));

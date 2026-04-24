@@ -92,7 +92,13 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
           {publicKey}
         </Typography>
 
-        <Box display="flex" justifyContent="center" gap={2} mt={4}>
+        <Box 
+          display="flex" 
+          flexDirection={{ xs: 'column', sm: 'row' }} 
+          justifyContent="center" 
+          gap={2} 
+          mt={4}
+        >
           <Button 
             label={copied ? "COPIÉ !" : "COPIER LE CODE"} 
             variant="contained" 
@@ -104,8 +110,10 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
               color: copied ? 'white' : 'black',
               fontWeight: 900,
               px: 4,
+              py: { xs: 1.5, sm: 1 },
               border: 'var(--border-main)',
               transition: 'all 0.2s',
+              width: { xs: '100%', sm: 'auto' },
               '&:hover': {
                 background: copied ? 'black' : '#f0f0f0',
                 border: 'var(--border-main)',
@@ -113,7 +121,7 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
             }} 
           />
           <Button 
-            label="QR Code" 
+            label="QR CODE" 
             variant="contained" 
             size="medium" 
             onClick={() => setShowQr(true)}
@@ -123,7 +131,9 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
               color: 'white',
               fontWeight: 900,
               px: 4,
+              py: { xs: 1.5, sm: 1 },
               border: 'var(--border-main)',
+              width: { xs: '100%', sm: 'auto' },
               '&:hover': {
                 background: '#333',
               }

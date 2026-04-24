@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid } from '@mui/material';
+import { Box, Typography, Paper, Fade } from '@mui/material';
 import { Question } from '@/types';
-import { ChoiceButton } from '@/components/atoms/ChoiceButton';
-import { BuzzerButton } from '@/components/atoms/BuzzerButton';
-import { Timer as TimerIcon } from '@mui/icons-material';
+import { Button } from '@/components/atoms/Button';
 import { useSession } from '@/store/useSession';
 
 interface GameCardProps {
@@ -15,191 +13,259 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
-  const { role, activatedAt } = useSession();
+  const { role } = useSession();
+  const activatedAt = useSession(state => state.activatedAt);
 
+  // Precision timer state
   const [timeLeft, setTimeLeft] = useState(() => {
     if (!activatedAt) return question.timer_seconds;
-    const elapsed = Math.floor((Date.now() - activatedAt) / 1000);
+    const now = Date.now();
+    const serverStart = activatedAt > 1000000000000 ? activatedAt : activatedAt * 1000;
+    const elapsed = Math.floor((now - serverStart) / 1000);
     return Math.max(0, question.timer_seconds - elapsed);
   });
 
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const hasAnswered = useSession(state => state.hasAnswered);
+
   const isModerator = role === 'moderator';
+  const isTimeUp = timeLeft <= 0;
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const tick = () => {
       if (!activatedAt) {
         setTimeLeft(question.timer_seconds);
         return;
       }
-      const elapsed = Math.floor((Date.now() - activatedAt) / 1000);
+
+      const now = Date.now();
+      const serverStart = activatedAt > 1000000000000 ? activatedAt : activatedAt * 1000;
+      const elapsed = Math.floor((now - serverStart) / 1000);
       const remaining = Math.max(0, question.timer_seconds - elapsed);
+
       setTimeLeft(remaining);
     };
 
-    const interval = setInterval(calculateTimeLeft, 1000);
+    tick();
+    const interval = setInterval(tick, 500);
     return () => clearInterval(interval);
   }, [activatedAt, question.timer_seconds]);
 
-  const toggleChoice = (id: string) => {
-    if (hasSubmitted || timeLeft <= 0 || isModerator) return;
+  const CHOICE_COLORS = [
+    { bg: '#FF4B5C', hover: '#FF3145' },
+    { bg: '#4592FF', hover: '#3185FF' },
+    { bg: '#FFC845', hover: '#FFBD2E' },
+    { bg: '#28D07C', hover: '#21B36A' },
+    { bg: '#9145FF', hover: '#7A2EFF' },
+    { bg: '#FF45D8', hover: '#FF2EB8' },
+    { bg: '#FF8D45', hover: '#FF721F' },
+    { bg: '#28D0C5', hover: '#21B3A9' },
+  ];
 
-    if (question.type === 'single' || question.type === 'boolean') {
-      setSelectedChoices([id]);
-      setHasSubmitted(true);
-      onSubmit([id]);
+
+  const toggleChoice = (choiceId: string) => {
+    if (hasAnswered || isTimeUp || isModerator) return;
+
+    if (question.type === 'multiple_choice') {
+      setSelectedChoices(prev =>
+        prev.includes(choiceId) ? prev.filter(id => id !== choiceId) : [...prev, choiceId]
+      );
     } else {
-      const newSelection = selectedChoices.includes(id)
-        ? selectedChoices.filter((cid) => cid !== id)
-        : [...selectedChoices, id];
-      setSelectedChoices(newSelection);
+      setSelectedChoices([choiceId]);
     }
   };
 
-  const timerProgress = (timeLeft / question.timer_seconds) * 100;
+  const handleManualSubmit = () => {
+    if (selectedChoices.length > 0 && !hasAnswered && !isTimeUp) {
+      onSubmit(selectedChoices);
+    }
+  };
 
-  if (question.type === 'buzzer') {
-    return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={4} py={8}>
-        <Typography variant="h3" fontWeight={1000} textAlign="center" gutterBottom>
-          {question.label.toUpperCase()}
-        </Typography>
-        {!isModerator ? (
-          <BuzzerButton disabled={timeLeft <= 0} onClick={() => alert('BUZZ !')} />
-        ) : (
-          <Typography variant="h5" color="text.secondary">Mode Moderateur - Attente des joueurs...</Typography>
-        )}
-        {timeLeft <= 0 && (
-          <Typography variant="h5" color="error" fontWeight={1000}>
-            TEMPS ÉCOULÉ !
-          </Typography>
-        )}
-      </Box>
-    );
-  }
+  const progress = (timeLeft / question.timer_seconds) * 100;
 
   return (
-    <Box className="animate-up" sx={{ maxWidth: 840, width: '100%', mx: 'auto' }}>
-      <Box
-        sx={{
-          height: 12,
-          width: '100%',
-          border: 'var(--border-main)',
-          mb: 4,
-          background: 'white',
-          borderRadius: 'var(--border-radius-sm)',
-          overflow: 'hidden'
-        }}
-      >
+    <Box
+      className="animate-up"
+      sx={{
+        width: '100%',
+        maxWidth: 800,
+        mx: 'auto',
+        position: 'relative'
+      }}
+    >
+      <Fade in={isTimeUp && !isModerator}>
         <Box
           sx={{
-            height: '100%',
-            width: `${timerProgress}%`,
-            background: timeLeft < 5 ? 'var(--error)' : 'black',
-            transition: 'width 1s linear'
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 100,
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 'var(--border-radius-md)',
+            border: 'var(--border-thick)',
+            pointerEvents: 'auto'
           }}
-        />
-      </Box>
+        >
+          <Typography
+            variant="h2"
+            fontWeight={1000}
+            sx={{
+              color: 'black',
+              letterSpacing: -4,
+              textTransform: 'uppercase',
+              transform: 'rotate(-5deg)',
+              textAlign: 'center',
+              px: 4
+            }}
+          >
+            TEMPS<br />TERMINÉ !
+          </Typography>
+        </Box>
+      </Fade>
 
-      <Box
+      <Paper
         sx={{
-          background: 'white',
+          p: { xs: 3, sm: 6 },
           borderRadius: 'var(--border-radius-md)',
-          p: { xs: 4, md: 6 },
+          bgcolor: 'white',
           border: 'var(--border-thick)',
-          position: 'relative'
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0px 20px 0px rgba(0,0,0,0.05)'
         }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={5}>
-          <Box
-            sx={{
-              border: 'var(--border-main)',
-              px: 2,
-              py: 0.5,
-              borderRadius: 'var(--border-radius-sm)',
-              background: 'white',
-              fontWeight: 1000,
-              fontSize: '0.75rem'
-            }}
-          >
-            {question.type.split('_').join(' ').toUpperCase()}
+        {/* Animated Progress Bar */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: 12,
+            width: `${progress}%`,
+            bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
+            transition: 'width 0.5s linear, background-color 0.3s'
+          }}
+        />
+
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={6} sx={{ mt: 1 }}>
+          <Box>
+            <Typography variant="overline" sx={{ fontWeight: 1000, color: 'rgba(0,0,0,0.5)', letterSpacing: 2 }}>
+              {question.type === 'multiple_choice' ? 'PLUSIEURS RÉPONSES' : 'RÉPONSE UNIQUE'}
+            </Typography>
+            <Typography variant="h3" fontWeight={1000} sx={{ letterSpacing: -2, mt: 1, lineHeight: 1, color: 'black' }}>
+              {question.label}
+            </Typography>
           </Box>
           <Box
-            display="flex"
-            alignItems="center"
-            gap={1}
             sx={{
-              border: 'var(--border-main)',
-              background: timeLeft < 5 ? '#FFE5E5' : 'white',
-              px: 2,
-              py: 0.5,
+              bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
+              color: 'white',
+              px: 3,
+              py: 2,
               borderRadius: 'var(--border-radius-sm)',
-              color: 'black',
+              fontWeight: 1000,
+              fontSize: '2rem',
+              minWidth: '90px',
+              textAlign: 'center',
+              border: '4px solid black',
+              boxShadow: 'var(--shadow-main)'
             }}
           >
-            <TimerIcon fontSize="small" />
-            <Typography variant="subtitle1" fontWeight={1000}>{timeLeft}S</Typography>
+            {Math.ceil(timeLeft)}
           </Box>
         </Box>
 
-        <Typography variant="h3" fontWeight={1000} mb={isModerator ? 0 : 6} sx={{ lineHeight: 1.1, letterSpacing: -2 }}>
-          {question.label.toUpperCase()}
-        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+          {question.choices?.map((choice, index) => {
+            const color = CHOICE_COLORS[index % CHOICE_COLORS.length];
+            const isSelected = selectedChoices.includes(choice.id);
 
-        {isModerator ? (
-          <Box
-            sx={{
-              mt: 4,
-              p: 3,
-              border: 'var(--border-main)',
-              borderRadius: 'var(--border-radius-sm)',
-              background: '#f9f9f9',
-              textAlign: 'center'
-            }}
-          >
-            <Typography variant="h6" fontWeight={800}>
-              👁️ MODE MODÉRATEUR : VOUS NE POUVEZ PAS RÉPONDRE
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mt={1}>
-              Les joueurs voient les options sur leur écran.
-            </Typography>
-          </Box>
-        ) : (
-          <Grid container spacing={2}>
-            {question.choices?.map((choice, idx) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={choice.id}>
-                <ChoiceButton
-                  index={idx}
-                  text={choice.text}
-                  selected={selectedChoices.includes(choice.id)}
-                  onClick={() => toggleChoice(choice.id)}
-                  disabled={hasSubmitted || timeLeft <= 0}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        )}
+            return (
+              <Box
+                key={choice.id}
+                onClick={() => toggleChoice(choice.id)}
+                sx={{
+                  p: 4,
+                  borderRadius: 'var(--border-radius-sm)',
+                  border: 'var(--border-thick)',
+                  cursor: (isTimeUp || isModerator || hasAnswered) ? 'default' : 'pointer',
+                  bgcolor: isSelected ? 'black' : color.bg,
+                  color: 'white',
+                  transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  position: 'relative',
+                  '&:hover': {
+                    transform: (isTimeUp || isModerator || hasAnswered) ? 'none' : 'translateY(-6px)',
+                    boxShadow: (isTimeUp || isModerator || hasAnswered) ? 'none' : `0px 10px 0px ${isSelected ? '#333' : color.hover}`,
+                    bgcolor: isSelected ? 'black' : color.hover
+                  },
+                  '&:active': {
+                    transform: 'translateY(0px)',
+                    boxShadow: 'none'
+                  },
+                  opacity: (isTimeUp && !isSelected) ? 0.3 : 1
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '8px',
+                    border: '3px solid white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  {isSelected && (
+                    <Box sx={{ width: 16, height: 16, bgcolor: 'white', borderRadius: '4px' }} />
+                  )}
+                </Box>
+                <Typography fontWeight={1000} fontSize="1.3rem" sx={{ letterSpacing: -0.5, textTransform: 'uppercase' }}>
+                  {choice.text}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
 
-        {!isModerator && question.type === 'multiple' && !hasSubmitted && timeLeft > 0 && (
-          <Box mt={6} display="flex" justifyContent="center">
-            <button
-              onClick={() => { setHasSubmitted(true); onSubmit(selectedChoices); }}
-              style={{
-                background: 'black',
-                color: 'white',
-                border: 'var(--border-main)',
-                padding: '16px 56px',
+        {!isModerator && (
+          <Box mt={10} display="flex" justifyContent="center">
+            <Button
+              label={hasAnswered ? "BIEN REÇU !" : "VALIDER MA RÉPONSE"}
+              disabled={hasAnswered || selectedChoices.length === 0 || isTimeUp}
+              onClick={handleManualSubmit}
+              sx={{
+                px: 12,
+                py: 3,
                 borderRadius: 'var(--border-radius-sm)',
-                fontSize: '18px',
                 fontWeight: 1000,
-                cursor: 'pointer',
+                fontSize: '1.4rem',
+                backgroundColor: hasAnswered ? '#4CAF50 !important' : 'black',
+                color: 'white',
+                border: 'var(--border-thick)',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  boxShadow: 'var(--shadow-main)'
+                },
+                '&:disabled': {
+                  opacity: 0.5,
+                  cursor: 'not-allowed'
+                }
               }}
-            >
-              VALIDER MES RÉPONSES
-            </button>
+            />
           </Box>
         )}
-      </Box>
+      </Paper>
     </Box>
   );
 };
+

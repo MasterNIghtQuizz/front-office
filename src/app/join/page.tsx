@@ -106,8 +106,9 @@ function JoinForm() {
                 placeholder="VOTRE PSEUDO"
                 required
                 value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
+                onChange={(e) => setNickname(e.target.value.substring(0, 25))}
                 inputProps={{
+                  maxLength: 25,
                   style: {
                     fontWeight: 800,
                     fontSize: '1.1rem',
@@ -115,6 +116,7 @@ function JoinForm() {
                   }
                 }}
               />
+
 
               <Button
                 type="submit"

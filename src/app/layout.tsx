@@ -4,12 +4,22 @@ import ThemeRegistry from '../theme/ThemeRegistry';
 import { SocketProvider } from '@/providers/SocketProvider';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://nightquizz.com'),
   title: {
-    default: 'NightQuizz',
+    default: 'NightQuizz - Créez et participez à des quiz en direct',
     template: '%s | NightQuizz',
   },
-  description: 'La plateforme ultime pour créer, animer et participer à des quiz interactifs en direct.',
-  keywords: ['quiz', 'live quiz', 'interactive', 'game', 'trivia', 'nightquizz', 'multiplayer'],
+  description: 'NightQuizz est la plateforme interactive ultime pour animer vos soirées. Créez des quiz personnalisés, invitez vos amis et jouez en temps réel depuis n\'importe quel appareil.',
+  keywords: [
+    'quiz en direct', 
+    'quiz interactif', 
+    'soirée quiz', 
+    'trivia live', 
+    'animation de groupe', 
+    'jeu de quiz multi-joueurs',
+    'créateur de quiz gratuit',
+    'NightQuizz'
+  ],
   authors: [{ name: 'NightQuizz Team' }],
   creator: 'NightQuizz',
   publisher: 'NightQuizz',
@@ -29,8 +39,8 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     url: 'https://nightquizz.com',
     siteName: 'NightQuizz',
-    title: 'NightQuizz - Créez et participez à des quiz en direct',
-    description: 'La plateforme ultime pour créer, animer et participer à des quiz interactifs en direct.',
+    title: 'NightQuizz - La plateforme ultime de quiz interactifs',
+    description: 'Transformez vos soirées avec NightQuizz. Quiz en direct, interaction en temps réel et fun garanti.',
     images: [
       {
         url: '/logo.png',
@@ -43,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'NightQuizz - Live Interactive Quizzes',
-    description: 'La plateforme ultime pour créer et participer à des quiz en direct.',
+    description: 'Créez et participez à des quiz en direct avec vos amis.',
     images: ['/logo.png'],
   },
   icons: {
@@ -60,8 +70,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'NightQuizz',
+              url: 'https://nightquizz.com',
+              description: 'Plateforme interactive de quiz en direct pour animer vos soirées.',
+              applicationCategory: 'GameApplication',
+              genre: 'Quiz',
+              operatingSystem: 'Web',
+              author: {
+                '@type': 'Organization',
+                name: 'NightQuizz'
+              },
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'EUR'
+              },
+            }),
+          }}
+        />
         <AppRouterCacheProvider>
           <ThemeRegistry>
             <SocketProvider>

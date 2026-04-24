@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { useSession } from './useSession';
-import { useAuth } from './useAuth';
 import { WebSocketMessage } from '@/types';
 
 interface SocketState {
@@ -8,6 +7,7 @@ interface SocketState {
   isConnected: boolean;
   error: string | null;
   isConnecting: boolean;
+  connectTimeout: ReturnType<typeof setTimeout> | null;
   connect: (userName: string) => void;
   disconnect: () => void;
   sendMessage: <T>(type: string, payload: T) => void;
@@ -18,53 +18,50 @@ export const useSocket = create<SocketState>((set, get) => ({
   isConnected: false,
   isConnecting: false,
   error: null,
+  connectTimeout: null,
 
-  connect: (userName: string) => {
-    // Avoid duplicate connections
-    const { socket, isConnecting, isConnected } = get();
-    if (isConnected || isConnecting) return;
-    if (socket && socket.readyState === WebSocket.OPEN) return;
+  connect: (userName: string = 'Anonymous') => {
+    const { isConnecting, isConnected, socket, connectTimeout } = get();
+    if (isConnecting || isConnected) return;
 
-    // mark as connecting immediately to prevent races
+    if (connectTimeout) clearTimeout(connectTimeout);
+
+    if (socket) {
+      try {
+        socket.close();
+      } catch (e) {
+        console.error('Failed to close WebSocket', e);
+      }
+    }
+
     set({ isConnecting: true, error: null });
 
-    const accessToken = useAuth.getState().token;
-    const gameToken = useSession.getState().gameToken;
-
-    // We prefer gameToken for session-specific actions, but accessToken might be needed for the initial handshake if the gateway requires it
-    // The gateway's hookAccessToken and hookGameToken should both be able to populate request.user
+    const gameTokenNow = localStorage.getItem('gameToken');
 
     const getWebSocketUrl = () => {
-      const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (typeof window === 'undefined') return 'ws://localhost:3010/ws';
 
-      if (typeof window !== 'undefined') {
-        const isInternalK8sName = publicApiUrl && (publicApiUrl.includes('api-gateway') || !publicApiUrl.includes('.'));
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const hostname = window.location.hostname;
+      const port = window.location.port;
 
-        if (!publicApiUrl || isInternalK8sName) {
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          return `${protocol}//${window.location.host}/ws`;
-        }
+      if ((hostname === 'localhost' || hostname === '127.0.0.1') && !port) {
+        return `${protocol}//${hostname}:3010/ws`;
       }
-
-      const baseUrl = publicApiUrl || 'http://localhost:3010';
-      const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
-      return `${wsBaseUrl}/ws`;
+      const host = port ? `${hostname}:${port}` : hostname;
+      return `${protocol}//${host}/ws`;
     };
 
     const wsUrl = getWebSocketUrl();
-
-    // Construct the URL with available tokens
     const params = new URLSearchParams();
-    if (accessToken) params.append('access-token', accessToken);
-    if (gameToken) params.append('game-token', gameToken);
+    if (gameTokenNow) params.append('game-token', gameTokenNow);
     params.append('userName', userName);
 
     const url = `${wsUrl}?${params.toString()}`;
 
-    console.log('Connecting to WebSocket:', wsUrl);
+    console.log('Connecting to WebSocket...', { url });
     const ws = new WebSocket(url);
-    // set socket early so other callers see a non-null socket
-    set({ socket: ws });
+    set({ socket: ws, connectTimeout: null });
 
     ws.onopen = () => {
       console.log('WebSocket connected');
@@ -73,7 +70,17 @@ export const useSocket = create<SocketState>((set, get) => ({
 
     ws.onclose = (event) => {
       console.log('WebSocket closed:', event.code, event.reason);
+      const wasConnecting = get().isConnecting;
       set({ isConnected: false, socket: null, isConnecting: false });
+
+      if (!wasConnecting) {
+        setTimeout(() => {
+          const state = get();
+          if (!state.isConnecting && !state.isConnected) {
+            state.connect(userName);
+          }
+        }, 3000);
+      }
     };
 
     ws.onerror = (error) => {
@@ -84,54 +91,73 @@ export const useSocket = create<SocketState>((set, get) => ({
     ws.onmessage = (event: MessageEvent) => {
       try {
         const message: WebSocketMessage<unknown> = JSON.parse(event.data);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('WS Message type:', message.type);
-        }
-
         const { type, payload } = message;
         const sessionStore = useSession.getState();
 
         switch (type) {
           case 'user_online':
-            const onlinePayload = payload as { userId: string; userName: string; role?: string };
-            if (onlinePayload.userId && onlinePayload.userName) {
+            const onlinePayload = payload as { participant_id: string; nickname: string; role?: string };
+            if (onlinePayload.participant_id && onlinePayload.nickname) {
               sessionStore.addParticipant({
-                participant_id: onlinePayload.userId,
-                nickname: onlinePayload.userName,
+                participant_id: onlinePayload.participant_id,
+                nickname: onlinePayload.nickname,
                 role: onlinePayload.role || 'user'
               });
             }
             break;
-          case 'user_offline':
-            const offlinePayload = payload as { userId: string };
-            if (offlinePayload.userId) {
-              sessionStore.removeParticipant(offlinePayload.userId);
+
+          case 'joined_session':
+          case 'participants_update':
+            const syncPayload = payload as {
+              sessionId: string;
+              participants?: Array<{ participant_id: string; nickname: string; role: string }>;
+              activated_at?: number;
+            };
+            if (syncPayload.participants) {
+              sessionStore.setParticipants(syncPayload.participants);
+            }
+            if (syncPayload.activated_at) {
+              useSession.setState({ activatedAt: syncPayload.activated_at });
             }
             break;
+
+          case 'user_offline': {
+            const offlinePayload = payload as { participant_id: string };
+            if (offlinePayload.participant_id) {
+              sessionStore.removeParticipant(offlinePayload.participant_id);
+            }
+            break;
+          }
+
           case 'session_started':
-          case 'session_next_question':
+          case 'session_next_question': {
+            const questionPayload = payload as { activated_at?: number };
+            if (questionPayload.activated_at) {
+              useSession.setState({ activatedAt: questionPayload.activated_at });
+            }
             sessionStore.fetchSession();
             break;
-          default:
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Received unhandled WS message type:', type);
-            }
+          }
+
+          case 'session_ended':
+            sessionStore.fetchSession();
             break;
         }
       } catch (e) {
-        console.error('Failed to parse WS message');
+        console.error('Failed to parse WS message', e);
       }
     };
-
-    // ws already set above; keep isConnecting until onopen/onclose
   },
 
   disconnect: () => {
-    const { socket } = get();
+    const { socket, connectTimeout } = get();
+    if (connectTimeout) {
+      clearTimeout(connectTimeout);
+    }
     if (socket) {
       socket.close();
-      set({ socket: null, isConnected: false });
     }
+    set({ socket: null, isConnected: false, isConnecting: false, connectTimeout: null });
   },
 
   sendMessage: <T>(type: string, payload: T) => {

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSocket } from '@/store/useSocket';
-import { useAuth } from '@/store/useAuth';
+import { useSession } from '@/store/useSession';
 
 interface SocketContextType {
   isConnected: boolean;
@@ -14,29 +15,26 @@ interface SocketContextType {
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
+  const pathname = usePathname();
   const { connect, disconnect, isConnected, isConnecting, error, sendMessage } = useSocket();
-  const { user, token } = useAuth();
+  const { gameToken, participants, participantId } = useSession();
 
   useEffect(() => {
-    // Auto-connect when authenticated
-    if (token && user && !isConnected && !isConnecting) {
-      const name = user.nickname || user.email;
-      console.log('SocketProvider: Auto-connecting user', name);
-      connect(name);
+    const isGamePage = pathname?.startsWith('/game');
+    console.log(`SocketProvider Debug: pathname="${pathname}", isGamePage=${isGamePage}, hasToken=${!!gameToken}`);
+    
+    if (isGamePage && gameToken) {
+      if (!isConnected && !isConnecting) {
+        const myNickname = participants.find(p => p.participant_id === participantId)?.nickname || 'Host';
+        connect(myNickname);
+      }
+    } else if (pathname && !isGamePage) {
+      if (isConnected || isConnecting) {
+        console.log(`SocketProvider: Route "${pathname}" is not a game route. (Disconnect disabled for debug)`);
+        // disconnect(); // Temporarily disabled to test if connection succeeds
+      }
     }
-
-    // Auto-disconnect when unauthenticated
-    if (!token && isConnected) {
-      console.log('SocketProvider: Auto-disconnecting');
-      disconnect();
-    }
-
-    // Cleanup on unmount
-    return () => {
-      // We might want to keep the connection alive between page navigations (which is what store does)
-      // but if the provider is at top level, unmount means app close or major layout change
-    };
-  }, [token, user, connect, disconnect, isConnected, isConnecting]);
+  }, [gameToken, pathname, connect, disconnect, isConnected, isConnecting, participants, participantId]);
 
   return (
     <SocketContext.Provider value={{ isConnected, isConnecting, error, sendMessage }}>
