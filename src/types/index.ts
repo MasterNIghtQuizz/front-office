@@ -1,7 +1,13 @@
 export interface User {
   id: string;
   email: string;
+  nickname?: string;
   role: 'user' | 'admin';
+}
+
+export interface WebSocketMessage<T = unknown> {
+  type: string;
+  payload: T;
 }
 
 export interface AuthResponse {
