@@ -93,28 +93,38 @@ export default function GamePage() {
       background: 'white'
     }}>
       <Container maxWidth="md">
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} sx={{ position: 'relative' }}>
-          <Button
-            label="QUITTER"
-            size="small"
-            onClick={handleQuitRequest}
-            sx={{
-              backgroundColor: '#FF4B5C !important',
-              color: 'white !important',
-              borderRadius: 'var(--border-radius-sm)',
-              fontWeight: 1000,
-              fontSize: '0.75rem',
-              px: 3,
-              py: 1,
-              border: '2px solid black',
-              zIndex: 10,
-              opacity: 1,
-              '&:hover': {
-                backgroundColor: '#d32f2f !important',
-                borderColor: 'black'
-              }
-            }}
-          />
+        <Box 
+          display="flex" 
+          justifyContent="space-between" 
+          alignItems="center" 
+          mb={4} 
+          gap={2}
+          flexWrap="wrap"
+        >
+          <Box sx={{ order: { xs: 2, sm: 1 } }}>
+            <Button
+              label="QUITTER"
+              size="small"
+              onClick={handleQuitRequest}
+              sx={{
+                backgroundColor: '#FF4B5C !important',
+                color: 'white !important',
+                borderRadius: 'var(--border-radius-sm)',
+                fontWeight: 1000,
+                fontSize: '0.75rem',
+                px: 3,
+                py: 1,
+                border: '2px solid black',
+                opacity: 1,
+                minWidth: '100px',
+                '&:hover': {
+                  backgroundColor: '#d32f2f !important',
+                  borderColor: 'black'
+                }
+              }}
+            />
+          </Box>
+
           <Typography
             variant="h4"
             fontWeight={1000}
@@ -122,13 +132,15 @@ export default function GamePage() {
               letterSpacing: -2,
               color: 'black',
               textTransform: 'uppercase',
-              position: 'absolute',
-              left: '50%',
-              transform: 'translateX(-50%)'
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              flex: { xs: '1 0 100%', sm: '1' },
+              textAlign: { xs: 'left', sm: 'center' },
+              order: { xs: 1, sm: 2 }
             }}
           >
             NIGHT QUIZ
           </Typography>
+
           {status === 'QUESTION_ACTIVE' && (
             <Box
               sx={{
@@ -138,7 +150,8 @@ export default function GamePage() {
                 borderRadius: 'var(--border-radius-sm)',
                 color: 'white',
                 fontWeight: 1000,
-                border: 'var(--border-main)'
+                border: 'var(--border-main)',
+                order: 3
               }}
             >
               {participants.length} JOUEURS
