@@ -15,24 +15,28 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
-  const [timeLeft, setTimeLeft] = useState(question.timer_seconds);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
   const { role, activatedAt } = useSession();
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!activatedAt) return question.timer_seconds;
+    const elapsed = Math.floor((Date.now() - activatedAt) / 1000);
+    return Math.max(0, question.timer_seconds - elapsed);
+  });
+
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const isModerator = role === 'moderator';
 
   useEffect(() => {
-    if (!activatedAt) {
-      setTimeLeft(question.timer_seconds);
-      return;
-    }
-
     const calculateTimeLeft = () => {
+      if (!activatedAt) {
+        setTimeLeft(question.timer_seconds);
+        return;
+      }
       const elapsed = Math.floor((Date.now() - activatedAt) / 1000);
       const remaining = Math.max(0, question.timer_seconds - elapsed);
       setTimeLeft(remaining);
     };
 
-    calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(interval);
   }, [activatedAt, question.timer_seconds]);
