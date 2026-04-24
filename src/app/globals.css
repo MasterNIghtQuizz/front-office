@@ -39,6 +39,8 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word; /* Fallback for older engines */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 

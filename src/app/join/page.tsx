@@ -61,7 +61,8 @@ export default function JoinPage() {
               letterSpacing: -3,
               color: 'black',
               mb: 1,
-              display: 'inline-block'
+              display: 'inline-block',
+              fontSize: { xs: '2.5rem', sm: '3.75rem' }
             }}
           >
             NIGHT QUIZ
@@ -74,9 +75,9 @@ export default function JoinPage() {
         <Box
           sx={{
             backgroundColor: 'white',
-            p: 6,
+            p: { xs: 3, sm: 6 },
             borderRadius: 'var(--border-radius-md)',
-            border: 'var(--border-thick)',
+            border: { xs: 'var(--border-main)', sm: 'var(--border-thick)' },
             textAlign: 'center',
             position: 'relative',
           }}

@@ -46,13 +46,15 @@ export default function HomePage() {
             mb: 2, 
             letterSpacing: '-0.05em',
             color: 'black',
-            textTransform: 'uppercase'
+            textTransform: 'uppercase',
+            fontSize: { xs: '3.5rem', sm: '5rem', md: '6rem' },
+            lineHeight: 1
           }}
         >
           NightQuizz
         </Typography>
 
-        <Typography variant="h6" sx={{ mb: 6, fontWeight: 800, color: 'black', maxWidth: 500, mx: 'auto', textTransform: 'uppercase', letterSpacing: 1 }}>
+        <Typography variant="h6" sx={{ mb: { xs: 4, sm: 6 }, fontWeight: 800, color: 'black', maxWidth: 500, mx: 'auto', textTransform: 'uppercase', letterSpacing: 1, fontSize: { xs: '0.8rem', sm: '1rem' } }}>
           La plateforme ultime pour créer et participer à des quiz en direct.
         </Typography>
 

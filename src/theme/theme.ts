@@ -21,6 +21,29 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontSize: '3rem',
+      fontWeight: 900,
+      '@media (min-width:600px)': {
+        fontSize: '4.5rem',
+      },
+      '@media (min-width:900px)': {
+        fontSize: '6rem',
+      },
+    },
+    h2: {
+      fontSize: '2rem',
+      fontWeight: 800,
+      '@media (min-width:600px)': {
+        fontSize: '3rem',
+      },
+    },
+    h6: {
+      fontSize: '1rem',
+      '@media (min-width:600px)': {
+        fontSize: '1.25rem',
+      },
+    },
     button: {
       textTransform: 'none',
       fontWeight: 600,
