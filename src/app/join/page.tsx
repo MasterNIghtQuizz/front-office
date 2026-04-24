@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Box, Typography, Container, Alert } from '@mui/material';
 import { useSession } from '@/store/useSession';
 import { useRouter, useSearchParams } from 'next/navigation';
