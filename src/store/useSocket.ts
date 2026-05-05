@@ -44,24 +44,29 @@ export const useSocket = create<SocketState>((set, get) => ({
 
       const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      // Client-side: If we're in the browser, we should try to use the current host
-      // especially if publicApiUrl is an internal K8s name like 'api-gateway'
+      // Client-side: If we're in the browser, we should try to use the publicApiUrl if available.
+      // We only fallback to the current domain if publicApiUrl is specifically an internal-only
+      // K8s service name like 'api-gateway' that doesn't resolve in the browser.
       if (typeof window !== 'undefined') {
-        const isInternalHost = publicApiUrl && (
-          publicApiUrl.includes('api-gateway') || 
-          publicApiUrl.includes('localhost') || 
-          publicApiUrl.includes('127.0.0.1')
-        );
+        const isK8sInternal = publicApiUrl && publicApiUrl.includes('api-gateway') && !publicApiUrl.includes('localhost') && !publicApiUrl.includes('127.0.0.1');
 
-        // If we have a public API URL and it's NOT an internal host, use it
-        if (publicApiUrl && !isInternalHost) {
-          const url = new URL(publicApiUrl);
-          const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-          return `${wsProtocol}//${url.host}/ws`;
+        // If we have a public API URL and it's NOT a K8s internal host, use it
+        if (publicApiUrl && !isK8sInternal) {
+          try {
+            const url = new URL(publicApiUrl);
+            const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+            return `${wsProtocol}//${url.host}/ws`;
+          } catch (e) {
+            console.warn('Invalid NEXT_PUBLIC_API_URL, falling back to current host', e);
+          }
         }
 
         // Fallback to current domain (BFF/Proxy pattern or same-domain deployment)
+        // Note: If we are on localhost:3005, we likely want the API Gateway on 3010.
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          return `${protocol}//localhost:3010/ws`;
+        }
         return `${protocol}//${window.location.host}/ws`;
       }
 
@@ -165,6 +170,12 @@ export const useSocket = create<SocketState>((set, get) => ({
 
           case 'session_ended':
             sessionStore.fetchSession();
+            break;
+
+          case 'session_deleted':
+            if (typeof window !== 'undefined') {
+              window.location.href = '/';
+            }
             break;
         }
       } catch (e) {
