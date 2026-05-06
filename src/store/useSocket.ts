@@ -43,7 +43,7 @@ export const useSocket = create<SocketState>((set, get) => ({
       if (publicWsUrl) return publicWsUrl;
 
       const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
-      
+
       // Client-side: If we're in the browser, we should try to use the publicApiUrl if available.
       // We only fallback to the current domain if publicApiUrl is specifically an internal-only
       // K8s service name like 'api-gateway' that doesn't resolve in the browser.
@@ -161,9 +161,12 @@ export const useSocket = create<SocketState>((set, get) => ({
           case 'session_started':
           case 'session_next_question': {
             const questionPayload = payload as { activated_at?: number };
-            if (questionPayload.activated_at) {
-              useSession.setState({ activatedAt: questionPayload.activated_at });
-            }
+            useSession.setState({
+              resultsDisplayed: false,
+              hasAnswered: false,
+              questionStats: null,
+              ...(questionPayload.activated_at ? { activatedAt: questionPayload.activated_at } : {})
+            });
             sessionStore.fetchSession();
             break;
           }
@@ -177,7 +180,30 @@ export const useSocket = create<SocketState>((set, get) => ({
               window.location.href = '/';
             }
             break;
+
+          case 'session_results_displayed':
+            useSession.setState({ resultsDisplayed: true });
+            break;
+
+          case 'user_pressed_buzzer': {
+            const buzzerPayload = payload as { participantId: string; username: string; sessionId: string };
+            const currentQ = useSession.getState().currentQuestion;
+            if (currentQ) {
+              useSession.setState({
+                currentQuestion: {
+                  ...currentQ,
+                  current_buzzer: {
+                    id: buzzerPayload.participantId,
+                    username: buzzerPayload.username,
+                    pressed_at: Date.now(),
+                  }
+                }
+              });
+            }
+            break;
+          }
         }
+
       } catch (e) {
         console.error('Failed to parse WS message', e);
       }

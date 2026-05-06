@@ -5,10 +5,11 @@ export interface User {
   role: 'user' | 'admin';
 }
 
-export interface WebSocketMessage<T = unknown> {
+export interface WebSocketMessage<T> {
   type: string;
   payload: T;
 }
+
 
 export interface AuthResponse {
   accessToken: string;
@@ -60,6 +61,11 @@ export interface Question {
   timer_seconds: number;
   quiz_id: string;
   choices?: Choice[];
+  current_buzzer?: {
+    id: string;
+    username: string;
+    pressed_at: number;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,3 +93,18 @@ export interface CreateChoiceRequest {
   is_correct: boolean;
   question_id: string;
 }
+export interface ParticipantResponse {
+  id: string;
+  questionId: string;
+  participantId: string;
+  sessionId: string;
+  isCorrect: boolean;
+  scoreObtained?: number;
+  choiceId?: string | null;
+  submittedAt: string;
+  response_data?: {
+    choiceIds?: string[];
+    [key: string]: unknown;
+  };
+}
+

@@ -243,6 +243,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, 
                  <MenuItem value="single">🎯 CHOIX UNIQUE (QCM)</MenuItem>
                  <MenuItem value="multiple">✅ CHOIX MULTIPLES (QCM)</MenuItem>
                  <MenuItem value="boolean">⚖️ VRAI / FAUX</MenuItem>
+                 <MenuItem value="buzzer">🚨 MODE BUZZER</MenuItem>
               </Select>
             </Box>
             <Input 

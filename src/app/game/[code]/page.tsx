@@ -3,11 +3,16 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/store/useSession';
-import { Box, Container, Typography, CircularProgress, Paper, Fade } from '@mui/material';
+import { Box, Container, Typography, CircularProgress, Fade } from '@mui/material';
 import { Button } from '@/components/atoms/Button';
 import { SessionLobby } from '@/components/organisms/SessionLobby';
 import { GameCard } from '@/components/organisms/GameCard';
-import { PlayArrow as PlayArrowIcon, NavigateNext as NavigateNextIcon } from '@mui/icons-material';
+import { ResultsOverlay } from '@/components/organisms/ResultsOverlay';
+import { QuestionStatsDashboard } from '@/components/organisms/QuestionStatsDashboard';
+import { SessionLeaderboard } from '@/components/organisms/SessionLeaderboard';
+import { PlayArrow as PlayArrowIcon, NavigateNext as NavigateNextIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+
+
 
 export default function GamePage() {
   const { code } = useParams();
@@ -16,16 +21,20 @@ export default function GamePage() {
     status,
     publicKey,
     participants,
+    participantId,
     currentQuestion,
+
     fetchSession,
     getCurrentQuestion,
     startSession,
     nextQuestion,
     submitResponse,
+    showResults,
     quitSession,
     loading,
     role
   } = useSession();
+
 
   const isModerator = role === 'moderator';
 
@@ -87,13 +96,9 @@ export default function GamePage() {
   }
 
   return (
-    <Box sx={{
-      minHeight: '100vh',
-      py: 4,
-      background: 'white'
-    }}>
+    <Box sx={{ minHeight: '100vh', py: 4, background: 'white' }}>
       <Container maxWidth="md">
-        <Box 
+        <Box
           suppressHydrationWarning
           sx={{
             display: 'flex',
@@ -102,21 +107,20 @@ export default function GamePage() {
             mb: 4,
             gap: 2,
             width: '100%',
-            position: 'relative'
+            position: 'relative',
           }}
         >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              width: '100%', 
-              justifyContent: 'space-between', 
+          <Box
+            sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              mb: { xs: 1, sm: 0 },
               position: { sm: 'absolute' },
               top: { sm: 0 },
               left: { sm: 0 },
               height: { sm: '100%' },
-              pointerEvents: 'none'
+              pointerEvents: 'none',
             }}
           >
             <Box sx={{ pointerEvents: 'auto' }}>
@@ -133,17 +137,12 @@ export default function GamePage() {
                   px: 2,
                   py: 0.5,
                   border: '2px solid black',
-                  opacity: 1,
                   minWidth: '80px',
-                  '&:hover': {
-                    backgroundColor: '#d32f2f !important',
-                    borderColor: 'black'
-                  }
                 }}
               />
             </Box>
 
-            <Box sx={{ display: { xs: 'flex', sm: 'flex' }, pointerEvents: 'auto' }}>
+            <Box sx={{ display: 'flex', pointerEvents: 'auto' }}>
               {status === 'QUESTION_ACTIVE' ? (
                 <Box
                   sx={{
@@ -155,7 +154,7 @@ export default function GamePage() {
                     fontWeight: 1000,
                     border: 'var(--border-main)',
                     whiteSpace: 'nowrap',
-                    fontSize: '0.75rem'
+                    fontSize: '0.75rem',
                   }}
                 >
                   {participants.length} JOUEURS
@@ -176,7 +175,6 @@ export default function GamePage() {
               fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' },
               textAlign: 'center',
               whiteSpace: 'nowrap',
-              pt: { xs: 0, sm: 0 }
             }}
           >
             NIGHT QUIZ
@@ -190,7 +188,7 @@ export default function GamePage() {
                 <SessionLobby
                   publicKey={publicKey || (code as string)}
                   participants={participants}
-                  participantId={useSession.getState().participantId}
+                  participantId={participantId}
                 />
 
                 {isModerator && (
@@ -208,9 +206,7 @@ export default function GamePage() {
                         fontWeight: 1000,
                         fontSize: '1.2rem',
                         border: 'var(--border-main)',
-                        '&:hover': {
-                          background: '#333',
-                        }
+                        '&:hover': { background: '#333' },
                       }}
                     />
                   </Box>
@@ -227,29 +223,46 @@ export default function GamePage() {
                 />
 
                 {isModerator && (
-                  <Box mt={6} display="flex" justifyContent="center">
-                    <Button
-                      label="Valider la question suivante"
-                      onClick={handleNext}
-                      endIcon={<NavigateNextIcon />}
-                      sx={{
-                        px: 6,
-                        py: 2,
-                        background: 'white',
-                        color: 'black',
-                        borderRadius: 'var(--border-radius-sm)',
-                        border: 'var(--border-thick)',
-                        fontWeight: 1000,
-                        '&:hover': {
-                          background: '#f0f0f0',
+                  <Box sx={{ width: '100%' }}>
+                    <QuestionStatsDashboard />
+                    <Box mt={2} display="flex" justifyContent="center" gap={3}>
+                      <Button
+                        label="AFFICHER LES RÉSULTATS"
+                        onClick={() => showResults()}
+                        startIcon={<VisibilityIcon />}
+                        sx={{
+                          px: 4,
+                          py: 2,
+                          background: '#28D07C',
+                          color: 'black',
+                          borderRadius: 'var(--border-radius-sm)',
                           border: 'var(--border-thick)',
-                        }
-                      }}
-                    />
+                          fontWeight: 1000,
+                          '&:hover': { background: '#21B36A' },
+                        }}
+                      />
+                      <Button
+                        label="QUESTION SUIVANTE"
+                        onClick={handleNext}
+                        endIcon={<NavigateNextIcon />}
+                        sx={{
+                          px: 4,
+                          py: 2,
+                          background: 'white',
+                          color: 'black',
+                          borderRadius: 'var(--border-radius-sm)',
+                          border: 'var(--border-thick)',
+                          fontWeight: 1000,
+                          '&:hover': { background: '#f0f0f0' },
+                        }}
+                      />
+                    </Box>
                   </Box>
                 )}
               </Box>
             )}
+
+            <ResultsOverlay />
 
             {status === 'QUESTION_ACTIVE' && !currentQuestion && (
               <Box display="flex" flexDirection="column" alignItems="center" py={10} gap={3}>
@@ -259,47 +272,29 @@ export default function GamePage() {
             )}
 
             {status === 'FINISHED' && (
-              <Box textAlign="center" py={10}>
-                <Paper
-                  sx={{
-                    p: 8,
-                    borderRadius: 'var(--border-radius-md)',
-                    bgcolor: 'white',
-                    border: 'var(--border-thick)',
-                  }}
-                >
-                  <Typography variant="h1" sx={{ mb: 2 }}>🏆</Typography>
-                  <Typography variant="h4" fontWeight={1000} sx={{ letterSpacing: -2, mb: 1, color: 'black' }}>
-                    LA SESSION EST TERMINÉE
-                  </Typography>
-                  <Typography variant="body1" color="black" mb={6} sx={{ fontWeight: 800 }}>
-                    MERCI D&apos;AVOIR PARTICIPÉ À CETTE AVENTURE.
-                  </Typography>
-                  <Box display="flex" justifyContent="center">
-                    <Button
-                      label="QUITTER LA SESSION"
-                      onClick={handleFinish}
-                      sx={{
-                        borderRadius: 'var(--border-radius-sm)',
-                        px: 10,
-                        py: 2.5,
-                        background: 'black',
-                        color: 'white',
-                        fontWeight: 1000,
-                        border: 'var(--border-main)',
-                        '&:hover': {
-                          background: '#333'
-                        }
-                      }}
-                    />
-                  </Box>
-                </Paper>
+              <Box textAlign="center" py={4}>
+                <SessionLeaderboard />
+                <Box display="flex" justifyContent="center" mt={8}>
+                  <Button
+                    label="RETOUR À L'ACCUEIL"
+                    onClick={handleFinish}
+                    sx={{
+                      borderRadius: 'var(--border-radius-sm)',
+                      px: 8,
+                      py: 2,
+                      background: 'black',
+                      color: 'white',
+                      fontWeight: 1000,
+                      border: 'var(--border-main)',
+                      '&:hover': { background: '#333' },
+                    }}
+                  />
+                </Box>
               </Box>
             )}
           </Box>
-        </Fade >
-
-      </Container >
-    </Box >
+        </Fade>
+      </Container>
+    </Box>
   );
 }

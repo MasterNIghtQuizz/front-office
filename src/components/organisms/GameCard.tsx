@@ -5,6 +5,8 @@ import { Box, Typography, Paper, Fade } from '@mui/material';
 import { Question } from '@/types';
 import { Button } from '@/components/atoms/Button';
 import { useSession } from '@/store/useSession';
+import { BuzzerButton } from '@/components/atoms/BuzzerButton';
+import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 
 interface GameCardProps {
   question: Question;
@@ -13,7 +15,7 @@ interface GameCardProps {
 
 export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
-  const { role } = useSession();
+  const { role, answerBuzzer } = useSession();
   const activatedAt = useSession(state => state.activatedAt);
 
   // Precision timer state
@@ -65,7 +67,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const toggleChoice = (choiceId: string) => {
     if (hasAnswered || isTimeUp || isModerator) return;
 
-    if (question.type === 'multiple_choice') {
+    if (question.type === 'multiple') {
       setSelectedChoices(prev =>
         prev.includes(choiceId) ? prev.filter(id => id !== choiceId) : [...prev, choiceId]
       );
@@ -155,7 +157,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={6} sx={{ mt: 1 }}>
           <Box>
             <Typography variant="overline" sx={{ fontWeight: 1000, color: 'rgba(0,0,0,0.5)', letterSpacing: 2 }}>
-              {question.type === 'multiple_choice' ? 'PLUSIEURS RÉPONSES' : 'RÉPONSE UNIQUE'}
+              {question.type === 'multiple' ? 'PLUSIEURS RÉPONSES' : question.type === 'buzzer' ? 'MODE BUZZER' : 'RÉPONSE UNIQUE'}
             </Typography>
             <Typography variant="h3" fontWeight={1000} sx={{ letterSpacing: -2, mt: 1, lineHeight: 1, color: 'black' }}>
               {question.label}
@@ -181,63 +183,123 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
         </Box>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
-          {question.choices?.map((choice, index) => {
-            const color = CHOICE_COLORS[index % CHOICE_COLORS.length];
-            const isSelected = selectedChoices.includes(choice.id);
+          {question.type !== 'buzzer' ? (
+            question.choices?.map((choice, index) => {
+              const color = CHOICE_COLORS[index % CHOICE_COLORS.length];
+              const isSelected = selectedChoices.includes(choice.id);
 
-            return (
-              <Box
-                key={choice.id}
-                onClick={() => toggleChoice(choice.id)}
-                sx={{
-                  p: 4,
-                  borderRadius: 'var(--border-radius-sm)',
-                  border: 'var(--border-thick)',
-                  cursor: (isTimeUp || isModerator || hasAnswered) ? 'default' : 'pointer',
-                  bgcolor: isSelected ? 'black' : color.bg,
-                  color: 'white',
-                  transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  position: 'relative',
-                  '&:hover': {
-                    transform: (isTimeUp || isModerator || hasAnswered) ? 'none' : 'translateY(-6px)',
-                    boxShadow: (isTimeUp || isModerator || hasAnswered) ? 'none' : `0px 10px 0px ${isSelected ? '#333' : color.hover}`,
-                    bgcolor: isSelected ? 'black' : color.hover
-                  },
-                  '&:active': {
-                    transform: 'translateY(0px)',
-                    boxShadow: 'none'
-                  },
-                  opacity: (isTimeUp && !isSelected) ? 0.3 : 1
-                }}
-              >
+              return (
                 <Box
+                  key={choice.id}
+                  onClick={() => toggleChoice(choice.id)}
                   sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '8px',
-                    border: '3px solid white',
+                    p: 4,
+                    borderRadius: 'var(--border-radius-sm)',
+                    border: 'var(--border-thick)',
+                    cursor: (isTimeUp || isModerator || hasAnswered) ? 'default' : 'pointer',
+                    bgcolor: isSelected ? 'black' : color.bg,
+                    color: 'white',
+                    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
+                    gap: 3,
+                    position: 'relative',
+                    '&:hover': {
+                      transform: (isTimeUp || isModerator || hasAnswered) ? 'none' : 'translateY(-6px)',
+                      boxShadow: (isTimeUp || isModerator || hasAnswered) ? 'none' : `0px 10px 0px ${isSelected ? '#333' : color.hover}`,
+                      bgcolor: isSelected ? 'black' : color.hover
+                    },
+                    '&:active': {
+                      transform: 'translateY(0px)',
+                      boxShadow: 'none'
+                    },
+                    opacity: (isTimeUp && !isSelected) ? 0.3 : 1
                   }}
                 >
-                  {isSelected && (
-                    <Box sx={{ width: 16, height: 16, bgcolor: 'white', borderRadius: '4px' }} />
-                  )}
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '8px',
+                      border: '3px solid white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {isSelected && (
+                      <Box sx={{ width: 16, height: 16, bgcolor: 'white', borderRadius: '4px' }} />
+                    )}
+                  </Box>
+                  <Typography fontWeight={1000} fontSize="1.3rem" sx={{ letterSpacing: -0.5, textTransform: 'uppercase' }}>
+                    {choice.text}
+                  </Typography>
                 </Box>
-                <Typography fontWeight={1000} fontSize="1.3rem" sx={{ letterSpacing: -0.5, textTransform: 'uppercase' }}>
-                  {choice.text}
+              );
+            })
+          ) : (
+            <Box sx={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+              {question.current_buzzer ? (
+                <Fade in={true}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" fontWeight={1000} sx={{ mb: 4, letterSpacing: -1, textTransform: 'uppercase' }}>
+                      ⚡️ {question.current_buzzer.username} A BUZZÉ !
+                    </Typography>
+                    
+                    {isModerator && (
+                      <Box display="flex" gap={3} justifyContent="center">
+                        <Button 
+                          label="CORRECT" 
+                          startIcon={<CheckIcon />}
+                          onClick={() => answerBuzzer(question.current_buzzer!.id, true)}
+                          sx={{ 
+                            bgcolor: '#28D07C', 
+                            color: 'black', 
+                            px: 4, 
+                            py: 2, 
+                            borderRadius: 'var(--border-radius-sm)',
+                            border: 'var(--border-thick)',
+                            fontWeight: 1000
+                          }} 
+                        />
+                        <Button 
+                          label="INCORRECT" 
+                          startIcon={<CloseIcon />}
+                          onClick={() => answerBuzzer(question.current_buzzer!.id, false)}
+                          sx={{ 
+                            bgcolor: '#FF4B5C', 
+                            color: 'white', 
+                            px: 4, 
+                            py: 2, 
+                            borderRadius: 'var(--border-radius-sm)',
+                            border: 'var(--border-thick)',
+                            fontWeight: 1000
+                          }} 
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                </Fade>
+              ) : (
+                !isModerator && (
+                  <BuzzerButton 
+                    onClick={() => onSubmit([])} 
+                    disabled={hasAnswered || isTimeUp} 
+                  />
+                )
+              )}
+              
+              {isModerator && !question.current_buzzer && (
+                <Typography variant="h5" fontWeight={1000} sx={{ opacity: 0.5 }}>
+                  EN ATTENTE D'UN BUZZER...
                 </Typography>
-              </Box>
-            );
-          })}
+              )}
+            </Box>
+          )}
         </Box>
 
-        {!isModerator && (
+        {!isModerator && question.type !== 'buzzer' && (
           <Box mt={10} display="flex" justifyContent="center">
             <Button
               label={hasAnswered ? "BIEN REÇU !" : "VALIDER MA RÉPONSE"}

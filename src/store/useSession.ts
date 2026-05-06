@@ -23,6 +23,9 @@ interface SessionState {
   role: 'user' | 'moderator' | null;
   activatedAt: number | null;
   hasAnswered: boolean;
+  resultsDisplayed: boolean;
+  questionStats: Array<{ choiceId: string; count: number }> | null;
+  leaderboard: Array<{ participantId: string; nickname: string; score: number }> | null;
   loading: boolean;
   error: string | null;
   isFetching: boolean;
@@ -33,14 +36,20 @@ interface SessionState {
   fetchSession: () => Promise<void>;
   startSession: () => Promise<void>;
   nextQuestion: () => Promise<void>;
+  showResults: () => Promise<void>;
+  fetchQuestionStats: () => Promise<void>;
+  fetchLeaderboard: () => Promise<void>;
   addParticipant: (participant: { participant_id: string; nickname: string; role: string }) => void;
   setParticipants: (participants: Array<{ participant_id: string; nickname: string; role: string }>) => void;
   removeParticipant: (participantId: string) => void;
   getCurrentQuestion: () => Promise<void>;
   submitResponse: (choiceIds: string[]) => Promise<void>;
+  answerBuzzer: (participantId: string, isCorrect: boolean) => Promise<void>;
   quitSession: () => Promise<void>;
   reset: () => void;
 }
+
+
 
 interface SessionResponse {
   session_id: string;
@@ -69,9 +78,10 @@ const getInitialState = () => {
       role: decoded.role,
       sessionId: decoded.sessionId
     };
-  } catch (e) {
+  } catch {
     return { gameToken: token, participantId: null, role: null, sessionId: null };
   }
+
 };
 
 const initialState = getInitialState();
@@ -87,9 +97,14 @@ export const useSession = create<SessionState>((set, get) => ({
   role: initialState.role,
   activatedAt: null,
   hasAnswered: false,
+  resultsDisplayed: false,
+  questionStats: null,
+  leaderboard: null,
   loading: false,
+
   error: null,
   isFetching: false,
+
 
   setGameToken: (token) => {
     if (token) {
@@ -117,7 +132,7 @@ export const useSession = create<SessionState>((set, get) => ({
     get().reset();
     set({ loading: true, error: null });
     try {
-      const res = await api.post<SessionResponse>('/sessions', { quiz_id: quizId });
+      const res = await api.post<SessionResponse>('/sessions/', { quiz_id: quizId });
       const { session_id, public_key, game_token } = res.data;
       get().setGameToken(game_token);
       set({ sessionId: session_id, publicKey: public_key, status: 'LOBBY' });
@@ -140,7 +155,7 @@ export const useSession = create<SessionState>((set, get) => ({
     get().reset();
     set({ loading: true, error: null });
     try {
-      const res = await api.post<JoinResponse>('/sessions/join', {
+      const res = await api.post<JoinResponse>('/sessions/join/', {
         session_public_key: publicKey,
         participant_nickname: nickname
       });
@@ -171,7 +186,7 @@ export const useSession = create<SessionState>((set, get) => ({
 
     set({ isFetching: true });
     try {
-      const res = await api.get<SessionResponse>('/sessions');
+      const res = await api.get<SessionResponse>('/sessions/');
       const participantId = get().participantId;
 
       const normalizedParticipants = res.data.participants.map(p => ({
@@ -205,7 +220,7 @@ export const useSession = create<SessionState>((set, get) => ({
 
   startSession: async () => {
     try {
-      await api.post('/sessions/start');
+      await api.post('/sessions/start/');
       // await get().fetchSession();
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors du démarrage';
@@ -215,7 +230,8 @@ export const useSession = create<SessionState>((set, get) => ({
 
   nextQuestion: async () => {
     try {
-      await api.post('/sessions/next');
+      await api.post('/sessions/next/');
+      set({ resultsDisplayed: false, hasAnswered: false, questionStats: null });
       // await get().fetchSession();
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
@@ -227,9 +243,50 @@ export const useSession = create<SessionState>((set, get) => ({
     }
   },
 
+  showResults: async () => {
+    try {
+      await api.post('/sessions/show-results/');
+      set({ resultsDisplayed: true });
+      if (get().role === 'moderator') {
+        get().fetchQuestionStats();
+      }
+    } catch (err) {
+      const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de l\'affichage des résultats';
+      set({ error: message || 'Erreur inconnue' });
+    }
+  },
+
+  fetchQuestionStats: async () => {
+    const { currentQuestion, sessionId } = get();
+    if (!currentQuestion || !sessionId) return;
+    try {
+      const res = await api.get(`/responses/stats/question/${currentQuestion.id}?sessionId=${sessionId}`);
+      set({ questionStats: res.data });
+    } catch (err) {
+      console.error('Failed to fetch stats', err);
+    }
+  },
+
+  fetchLeaderboard: async () => {
+    const { sessionId, participants } = get();
+    if (!sessionId) return;
+    try {
+      const res = await api.get<Array<{ participantId: string; score: number }>>(`/responses/leaderboard/session/${sessionId}`);
+      const enriched = res.data.map(item => {
+        const p = participants.find(part => part.participant_id === item.participantId);
+        return { ...item, nickname: p?.nickname || 'Joueur inconnu' };
+      });
+      set({ leaderboard: enriched });
+    } catch (err) {
+      console.error('Failed to fetch leaderboard', err);
+    }
+  },
+
+
+
   getCurrentQuestion: async () => {
     try {
-      const res = await api.get('/sessions/current-question');
+      const res = await api.get('/sessions/current-question/');
       set({ currentQuestion: res.data });
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
@@ -282,7 +339,7 @@ export const useSession = create<SessionState>((set, get) => ({
     }
 
     try {
-      await api.post('/sessions/submit', { choiceIds });
+      await api.post('/sessions/submit/', { choiceIds });
       set({ hasAnswered: true });
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
@@ -293,11 +350,21 @@ export const useSession = create<SessionState>((set, get) => ({
       }
     }
   },
+  
+  answerBuzzer: async (participantId, isCorrect) => {
+    try {
+      await api.post('/sessions/buzzer/answer/', { participantId, isCorrect });
+      await get().fetchSession();
+    } catch (err) {
+      const message = isAxiosError(err) ? err.response?.data?.message : 'Erreur lors de la validation du buzzer';
+      set({ error: message || 'Erreur inconnue' });
+    }
+  },
 
 
   quitSession: async () => {
     try {
-      await api.post('/sessions/leave', {});
+      await api.post('/sessions/leave/', {});
     } catch (err) {
       if (isAxiosError(err)) {
         console.error('Erreur lors du départ de la session', err.response?.status);
@@ -324,6 +391,9 @@ export const useSession = create<SessionState>((set, get) => ({
       role: null,
       activatedAt: null,
       hasAnswered: false,
+      resultsDisplayed: false,
+      questionStats: null,
+      leaderboard: null,
       error: null
     });
   }
