@@ -28,9 +28,10 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   });
 
   const hasAnswered = useSession(state => state.hasAnswered);
+  const resultsDisplayed = useSession(state => state.resultsDisplayed);
 
   const isModerator = role === 'moderator';
-  const isTimeUp = timeLeft <= 0;
+  const isTimeUp = timeLeft <= 0 || resultsDisplayed;
 
   useEffect(() => {
     const tick = () => {
