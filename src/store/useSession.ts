@@ -231,7 +231,7 @@ export const useSession = create<SessionState>((set, get) => ({
   nextQuestion: async () => {
     try {
       await api.post('/sessions/next/');
-      set({ resultsDisplayed: false, hasAnswered: false, questionStats: null });
+      set({ resultsDisplayed: false, hasAnswered: false, questionStats: null, currentQuestion: null });
       // await get().fetchSession();
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {

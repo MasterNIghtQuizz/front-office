@@ -284,9 +284,9 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                 </Fade>
               ) : (
                 !isModerator && (
-                  <BuzzerButton 
-                    onClick={() => onSubmit([])} 
-                    disabled={hasAnswered || isTimeUp} 
+                  <BuzzerButton
+                    onClick={() => onSubmit([])}
+                    disabled={hasAnswered || isTimeUp || !!question.current_buzzer}
                   />
                 )
               )}

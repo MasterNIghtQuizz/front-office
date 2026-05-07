@@ -165,6 +165,7 @@ export const useSocket = create<SocketState>((set, get) => ({
               resultsDisplayed: false,
               hasAnswered: false,
               questionStats: null,
+              currentQuestion: null,
               ...(questionPayload.activated_at ? { activatedAt: questionPayload.activated_at } : {})
             });
             sessionStore.fetchSession();
@@ -181,9 +182,14 @@ export const useSocket = create<SocketState>((set, get) => ({
             }
             break;
 
-          case 'session_results_displayed':
-            useSession.setState({ resultsDisplayed: true });
+          case 'session_results_displayed': {
+            const resultsPayload = payload as { sessionId: string; questionId?: string };
+            const currentQ = useSession.getState().currentQuestion;
+            if (!resultsPayload.questionId || !currentQ || currentQ.id === resultsPayload.questionId) {
+              useSession.setState({ resultsDisplayed: true });
+            }
             break;
+          }
 
           case 'user_pressed_buzzer': {
             const buzzerPayload = payload as { participantId: string; username: string; sessionId: string };
