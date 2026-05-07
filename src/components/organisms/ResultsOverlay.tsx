@@ -124,17 +124,20 @@ export const ResultsOverlay: React.FC = () => {
                   <Box
                     sx={{
                       mt: 4,
-                      bgcolor: 'black',
-                      color: 'white',
+                      bgcolor: isCorrect ? 'black' : 'white',
+                      color: isCorrect ? 'white' : '#FF4B5C',
                       display: 'inline-block',
                       px: 3,
                       py: 1,
                       borderRadius: 'var(--border-radius-sm)',
                       fontWeight: 1000,
-                      transform: 'rotate(2deg)'
+                      transform: 'rotate(2deg)',
+                      border: isCorrect ? 'none' : '4px solid #FF4B5C'
                     }}
                   >
-                    {isCorrect ? `+${response.scoreObtained ?? 1} POINTS` : '0 POINTS'}
+                    {isCorrect 
+                      ? `+${currentQuestion?.type === 'buzzer' ? 2 : 1} POINT${currentQuestion?.type === 'buzzer' ? 'S' : ''}` 
+                      : '-1 POINT'}
                   </Box>
                 )}
               </>

@@ -251,7 +251,7 @@ export default function GamePage() {
                         }}
                       />
                       <Button
-                        label="QUESTION SUIVANTE"
+                        label={currentQuestion?.is_last_question ? "VOIR LES RÉSULTATS FINAUX" : "QUESTION SUIVANTE"}
                         onClick={handleNext}
                         endIcon={<NavigateNextIcon />}
                         sx={{
@@ -291,11 +291,11 @@ export default function GamePage() {
                       borderRadius: 'var(--border-radius-sm)',
                       px: 8,
                       py: 2,
-                      background: 'black',
-                      color: 'white',
+                      background: 'white',
+                      color: 'black',
                       fontWeight: 1000,
                       border: 'var(--border-main)',
-                      '&:hover': { background: '#333' },
+                      '&:hover': { background: '#f0f0f0' },
                     }}
                   />
                 </Box>

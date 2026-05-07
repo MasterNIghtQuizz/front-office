@@ -66,6 +66,7 @@ export interface Question {
     username: string;
     pressed_at: number;
   } | null;
+  is_last_question?: boolean;
   createdAt: string;
   updatedAt: string;
 }
