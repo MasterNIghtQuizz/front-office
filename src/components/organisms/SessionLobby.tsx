@@ -199,7 +199,7 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
           >
             <Typography variant="h5" fontWeight={1000}>{participants.length}</Typography>
           </Box>
-          <Typography variant="h5" fontWeight={1000} sx={{ letterSpacing: -1, color: 'white' }}>
+          <Typography variant="h5" fontWeight={1000} sx={{ letterSpacing: -1, color: 'black' }}>
             JOUEURS CONNECTÉS
           </Typography>
         </Box>

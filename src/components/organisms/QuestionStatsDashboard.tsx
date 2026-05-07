@@ -7,7 +7,7 @@ import { useSession } from '@/store/useSession';
 export const QuestionStatsDashboard: React.FC = () => {
   const { questionStats, currentQuestion, resultsDisplayed, role } = useSession();
 
-  if (!resultsDisplayed || role !== 'moderator' || !currentQuestion || !questionStats) return null;
+  if (!resultsDisplayed || role !== 'moderator' || !currentQuestion || !questionStats || currentQuestion.type === 'buzzer') return null;
 
   const totalResponses = questionStats.reduce((sum, stat) => sum + stat.count, 0);
 

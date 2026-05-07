@@ -6,7 +6,10 @@ import { useSession } from '@/store/useSession';
 import { EmojiEvents as TrophyIcon } from '@mui/icons-material';
 
 export const SessionLeaderboard: React.FC = () => {
-  const { leaderboard, status, resultsDisplayed, fetchLeaderboard } = useSession();
+  const { leaderboard, status, resultsDisplayed, fetchLeaderboard, role } = useSession();
+  const isModerator = role === 'moderator';
+  const isDarkMode = status === 'FINISHED';
+  const textColor = isDarkMode ? 'white' : 'black';
 
   useEffect(() => {
     if (status === 'FINISHED' || resultsDisplayed) {
@@ -30,7 +33,7 @@ export const SessionLeaderboard: React.FC = () => {
             mb: 10,
             letterSpacing: -4,
             textTransform: 'uppercase',
-            color: 'white',
+            color: textColor,
             fontSize: { xs: '2.5rem', sm: '4rem' }
           }}
         >
@@ -53,7 +56,7 @@ export const SessionLeaderboard: React.FC = () => {
           {top3[1] && (
             <Zoom in={true} style={{ transitionDelay: '300ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 100, sm: 140 } }}>
-                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: 'white' }}>{top3[1].nickname}</Typography>
+                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: textColor }}>{top3[1].nickname}</Typography>
                 <Box
                   sx={{
                     width: '100%',
@@ -81,7 +84,7 @@ export const SessionLeaderboard: React.FC = () => {
             <Zoom in={true} style={{ transitionDelay: '500ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 120, sm: 180 } }}>
                 <TrophyIcon sx={{ fontSize: { xs: '2.5rem', sm: '4rem' }, color: '#FFC845', mb: 2 }} />
-                <Typography fontWeight={1000} sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.4rem' }, textAlign: 'center', color: 'white' }}>{top3[0].nickname}</Typography>
+                <Typography fontWeight={1000} sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.4rem' }, textAlign: 'center', color: textColor }}>{top3[0].nickname}</Typography>
                 <Box
                   sx={{
                     width: '100%',
@@ -109,7 +112,7 @@ export const SessionLeaderboard: React.FC = () => {
           {top3[2] && (
             <Zoom in={true} style={{ transitionDelay: '700ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 100, sm: 140 } }}>
-                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: 'white' }}>{top3[2].nickname}</Typography>
+                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: textColor }}>{top3[2].nickname}</Typography>
                 <Box
                   sx={{
                     width: '100%',

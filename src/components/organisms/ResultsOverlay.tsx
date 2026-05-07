@@ -46,7 +46,7 @@ export const ResultsOverlay: React.FC = () => {
           right: 0,
           bottom: 0,
           zIndex: 2000,
-          background: 'rgba(0,0,0,0.85)',
+          background: 'rgba(255,255,255,0.95)',
           backdropFilter: 'blur(12px)',
           display: 'flex',
           flexDirection: 'column',
@@ -150,7 +150,7 @@ export const ResultsOverlay: React.FC = () => {
           variant="body2"
           sx={{
             mt: 4,
-            color: 'rgba(255,255,255,0.5)',
+            color: 'rgba(0,0,0,0.5)',
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: 2

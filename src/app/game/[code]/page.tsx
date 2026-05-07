@@ -89,8 +89,20 @@ export default function GamePage() {
     );
   }
 
+  const isDarkMode = status === 'FINISHED';
+  const backgroundColor = isDarkMode ? '#0A0A0B' : 'white';
+  const textColor = isDarkMode ? 'white' : 'black';
+
   return (
-    <Box sx={{ minHeight: '100vh', py: 4, background: '#0A0A0B', backgroundImage: 'radial-gradient(circle at 2px 2px, #1a1a1a 1px, transparent 0)', backgroundSize: '40px 40px' }}>
+    <Box sx={{
+      minHeight: '100vh',
+      py: 4,
+      background: backgroundColor,
+      backgroundImage: isDarkMode ? 'radial-gradient(circle at 2px 2px, #1a1a1a 1px, transparent 0)' : 'none',
+      backgroundSize: '40px 40px',
+      color: textColor,
+      transition: 'all 0.3s ease'
+    }}>
       <Container maxWidth="md">
         {status !== 'FINISHED' && (
           <Box
@@ -144,8 +156,8 @@ export default function GamePage() {
                       px: 1.5,
                       py: 0.5,
                       borderRadius: 'var(--border-radius-sm)',
-                      color: 'black',
-                      background: 'white',
+                      color: isDarkMode ? 'white' : 'black',
+                      background: isDarkMode ? 'black' : 'white',
                       fontWeight: 1000,
                       border: 'var(--border-main)',
                       whiteSpace: 'nowrap',
@@ -165,7 +177,7 @@ export default function GamePage() {
               fontWeight={1000}
               sx={{
                 letterSpacing: -2,
-                color: 'white',
+                color: textColor,
                 textTransform: 'uppercase',
                 fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' },
                 textAlign: 'center',
@@ -196,13 +208,13 @@ export default function GamePage() {
                       sx={{
                         px: 8,
                         py: 2.5,
-                        background: 'white',
-                        color: 'black',
+                        background: isDarkMode ? 'white' : 'black',
+                        color: isDarkMode ? 'black' : 'white',
                         borderRadius: 'var(--border-radius-sm)',
                         fontWeight: 1000,
                         fontSize: '1.2rem',
                         border: 'var(--border-main)',
-                        '&:hover': { background: '#333' },
+                        '&:hover': { background: isDarkMode ? '#f0f0f0' : '#333' },
                       }}
                     />
                   </Box>
