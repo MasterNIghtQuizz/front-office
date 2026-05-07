@@ -187,6 +187,7 @@ export const useSocket = create<SocketState>((set, get) => ({
             const currentQ = useSession.getState().currentQuestion;
             if (!resultsPayload.questionId || !currentQ || currentQ.id === resultsPayload.questionId) {
               useSession.setState({ resultsDisplayed: true });
+              useSession.getState().fetchLeaderboard();
             }
             break;
           }

@@ -247,6 +247,7 @@ export const useSession = create<SessionState>((set, get) => ({
     try {
       await api.post('/sessions/show-results/');
       set({ resultsDisplayed: true });
+      get().fetchLeaderboard();
       if (get().role === 'moderator') {
         get().fetchQuestionStats();
       }

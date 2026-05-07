@@ -31,7 +31,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const resultsDisplayed = useSession(state => state.resultsDisplayed);
 
   const isModerator = role === 'moderator';
-  const isTimeUp = timeLeft <= 0 || resultsDisplayed;
+  const isTimeUp = question.type === 'buzzer' ? resultsDisplayed : (timeLeft <= 0 || resultsDisplayed);
 
   useEffect(() => {
     const tick = () => {
@@ -142,18 +142,20 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
           boxShadow: '0px 20px 0px rgba(0,0,0,0.05)'
         }}
       >
-        {/* Animated Progress Bar */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: 12,
-            width: `${progress}%`,
-            bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
-            transition: 'width 0.5s linear, background-color 0.3s'
-          }}
-        />
+        {/* Animated Progress Bar — hidden for buzzer questions */}
+        {question.type !== 'buzzer' && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: 12,
+              width: `${progress}%`,
+              bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
+              transition: 'width 0.5s linear, background-color 0.3s'
+            }}
+          />
+        )}
 
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={6} sx={{ mt: 1 }}>
           <Box>
@@ -164,23 +166,25 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
               {question.label}
             </Typography>
           </Box>
-          <Box
-            sx={{
-              bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
-              color: 'white',
-              px: 3,
-              py: 2,
-              borderRadius: 'var(--border-radius-sm)',
-              fontWeight: 1000,
-              fontSize: '2rem',
-              minWidth: '90px',
-              textAlign: 'center',
-              border: '4px solid black',
-              boxShadow: 'var(--shadow-main)'
-            }}
-          >
-            {Math.ceil(timeLeft)}
-          </Box>
+          {question.type !== 'buzzer' && (
+            <Box
+              sx={{
+                bgcolor: timeLeft < 5 ? '#FF4B5C' : 'black',
+                color: 'white',
+                px: 3,
+                py: 2,
+                borderRadius: 'var(--border-radius-sm)',
+                fontWeight: 1000,
+                fontSize: '2rem',
+                minWidth: '90px',
+                textAlign: 'center',
+                border: '4px solid black',
+                boxShadow: 'var(--shadow-main)'
+              }}
+            >
+              {Math.ceil(timeLeft)}
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
@@ -286,7 +290,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                 !isModerator && (
                   <BuzzerButton
                     onClick={() => onSubmit([])}
-                    disabled={hasAnswered || isTimeUp || !!question.current_buzzer}
+                    disabled={hasAnswered || isTimeUp}
                   />
                 )
               )}

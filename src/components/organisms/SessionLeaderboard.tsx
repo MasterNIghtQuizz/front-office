@@ -6,15 +6,15 @@ import { useSession } from '@/store/useSession';
 import { EmojiEvents as TrophyIcon } from '@mui/icons-material';
 
 export const SessionLeaderboard: React.FC = () => {
-  const { leaderboard, status, fetchLeaderboard } = useSession();
+  const { leaderboard, status, resultsDisplayed, fetchLeaderboard } = useSession();
 
   useEffect(() => {
-    if (status === 'FINISHED') {
+    if (status === 'FINISHED' || resultsDisplayed) {
       fetchLeaderboard();
     }
-  }, [status, fetchLeaderboard]);
+  }, [status, resultsDisplayed, fetchLeaderboard]);
 
-  if (status !== 'FINISHED' || !leaderboard) return null;
+  if ((status !== 'FINISHED' && !resultsDisplayed) || !leaderboard) return null;
 
   const top3 = leaderboard.slice(0, 3);
   const others = leaderboard.slice(3);
@@ -22,15 +22,15 @@ export const SessionLeaderboard: React.FC = () => {
   return (
     <Fade in={true}>
       <Box sx={{ py: 4, width: '100%', maxWidth: 800, mx: 'auto' }}>
-        <Typography 
-          variant="h2" 
-          fontWeight={1000} 
-          sx={{ 
-            textAlign: 'center', 
-            mb: 10, 
-            letterSpacing: -4, 
+        <Typography
+          variant="h2"
+          fontWeight={1000}
+          sx={{
+            textAlign: 'center',
+            mb: 10,
+            letterSpacing: -4,
             textTransform: 'uppercase',
-            color: 'black',
+            color: 'white',
             fontSize: { xs: '2.5rem', sm: '4rem' }
           }}
         >
@@ -38,11 +38,11 @@ export const SessionLeaderboard: React.FC = () => {
         </Typography>
 
         {/* Podium */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'flex-end', 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
             gap: { xs: 1, sm: 4 },
             mb: 12,
             height: { xs: 250, sm: 350 },
@@ -53,13 +53,13 @@ export const SessionLeaderboard: React.FC = () => {
           {top3[1] && (
             <Zoom in={true} style={{ transitionDelay: '300ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 100, sm: 140 } }}>
-                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' } }}>{top3[1].nickname}</Typography>
-                <Box 
-                  sx={{ 
-                    width: '100%', 
-                    height: { xs: 100, sm: 140 }, 
-                    bgcolor: '#4592FF', 
-                    border: 'var(--border-thick)', 
+                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: 'white' }}>{top3[1].nickname}</Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: { xs: 100, sm: 140 },
+                    bgcolor: '#4592FF',
+                    border: 'var(--border-thick)',
                     borderRadius: 'var(--border-radius-sm) var(--border-radius-sm) 0 0',
                     display: 'flex',
                     alignItems: 'center',
@@ -81,13 +81,13 @@ export const SessionLeaderboard: React.FC = () => {
             <Zoom in={true} style={{ transitionDelay: '500ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 120, sm: 180 } }}>
                 <TrophyIcon sx={{ fontSize: { xs: '2.5rem', sm: '4rem' }, color: '#FFC845', mb: 2 }} />
-                <Typography fontWeight={1000} sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.4rem' }, textAlign: 'center' }}>{top3[0].nickname}</Typography>
-                <Box 
-                  sx={{ 
-                    width: '100%', 
-                    height: { xs: 160, sm: 220 }, 
-                    bgcolor: '#FFC845', 
-                    border: 'var(--border-thick)', 
+                <Typography fontWeight={1000} sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.4rem' }, textAlign: 'center', color: 'white' }}>{top3[0].nickname}</Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: { xs: 160, sm: 220 },
+                    bgcolor: '#FFC845',
+                    border: 'var(--border-thick)',
                     borderRadius: 'var(--border-radius-sm) var(--border-radius-sm) 0 0',
                     display: 'flex',
                     alignItems: 'center',
@@ -109,13 +109,13 @@ export const SessionLeaderboard: React.FC = () => {
           {top3[2] && (
             <Zoom in={true} style={{ transitionDelay: '700ms' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: 100, sm: 140 } }}>
-                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' } }}>{top3[2].nickname}</Typography>
-                <Box 
-                  sx={{ 
-                    width: '100%', 
-                    height: { xs: 80, sm: 100 }, 
-                    bgcolor: '#FF4B5C', 
-                    border: 'var(--border-thick)', 
+                <Typography fontWeight={1000} sx={{ mb: 2, textAlign: 'center', fontSize: { xs: '0.8rem', sm: '1rem' }, color: 'white' }}>{top3[2].nickname}</Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: { xs: 80, sm: 100 },
+                    bgcolor: '#FF4B5C',
+                    border: 'var(--border-thick)',
                     borderRadius: 'var(--border-radius-sm) var(--border-radius-sm) 0 0',
                     display: 'flex',
                     alignItems: 'center',
@@ -135,21 +135,21 @@ export const SessionLeaderboard: React.FC = () => {
 
         {/* Other Players */}
         {others.length > 0 && (
-          <Paper 
-            sx={{ 
-              p: 4, 
-              borderRadius: 'var(--border-radius-md)', 
-              border: 'var(--border-thick)', 
+          <Paper
+            sx={{
+              p: 4,
+              borderRadius: 'var(--border-radius-md)',
+              border: 'var(--border-thick)',
               bgcolor: 'white',
               boxShadow: '0px 20px 0px rgba(0,0,0,0.05)'
             }}
           >
             {others.map((player, index) => (
-              <Box 
-                key={player.participantId} 
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <Box
+                key={player.participantId}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
                   py: 3,
                   borderBottom: index === others.length - 1 ? 'none' : '4px solid #f5f5f5'

@@ -5,9 +5,10 @@ import { Box, Typography, Fade, Zoom, CircularProgress } from '@mui/material';
 import { useSession } from '@/store/useSession';
 import api from '@/lib/api';
 import { ParticipantResponse } from '@/types';
+import { SessionLeaderboard } from './SessionLeaderboard';
 
 export const ResultsOverlay: React.FC = () => {
-  const { resultsDisplayed, sessionId, participantId, currentQuestion, role } = useSession();
+  const { resultsDisplayed, sessionId, participantId, currentQuestion, role, status } = useSession();
   const [response, setResponse] = useState<ParticipantResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +17,6 @@ export const ResultsOverlay: React.FC = () => {
       const fetchResults = async () => {
         setLoading(true);
         try {
-          // Fetch current results to see if the user got it right
           const res = await api.get<ParticipantResponse[]>(`/responses/participant/${participantId}?sessionId=${sessionId}`);
           const currentResult = res.data.find(r => r.questionId === currentQuestion.id);
           setResponse(currentResult || null);
@@ -32,7 +32,7 @@ export const ResultsOverlay: React.FC = () => {
     }
   }, [resultsDisplayed, sessionId, participantId, currentQuestion, role]);
 
-  if (!resultsDisplayed || role === 'moderator') return null;
+  if (!resultsDisplayed || role === 'moderator' || status === 'FINISHED') return null;
 
   const isCorrect = response?.isCorrect ?? false;
 
@@ -51,9 +51,9 @@ export const ResultsOverlay: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           p: 4,
-          textAlign: 'center'
+          textAlign: 'center',
+          overflowY: 'auto'
         }}
       >
         <Zoom in={resultsDisplayed} style={{ transitionDelay: '300ms' }}>
@@ -61,38 +61,41 @@ export const ResultsOverlay: React.FC = () => {
             sx={{
               p: { xs: 4, sm: 6 },
               borderRadius: 'var(--border-radius-md)',
-              background: isCorrect 
-                ? 'linear-gradient(135deg, #28D07C 0%, #21B36A 100%)' 
+              background: isCorrect
+                ? 'linear-gradient(135deg, #28D07C 0%, #21B36A 100%)'
                 : 'linear-gradient(135deg, #FF4B5C 0%, #D32F2F 100%)',
               border: '8px solid black',
               boxShadow: '0px 30px 60px rgba(0,0,0,0.5)',
               maxWidth: 500,
               width: '100%',
               transform: 'rotate(-2deg)',
-              position: 'relative'
+              position: 'relative',
+              mb: 8,
+              mt: 8,
+              flexShrink: 0
             }}
           >
             {loading ? (
               <CircularProgress sx={{ color: 'white' }} />
             ) : (
               <>
-                <Typography 
-                  variant="h1" 
-                  sx={{ 
-                    fontSize: { xs: '4rem', sm: '6rem' }, 
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontSize: { xs: '4rem', sm: '6rem' },
                     mb: 2,
                     filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.3))'
                   }}
                 >
                   {isCorrect ? '✨' : '💀'}
                 </Typography>
-                
-                <Typography 
-                  variant="h2" 
-                  fontWeight={1000} 
-                  sx={{ 
-                    color: 'white', 
-                    letterSpacing: -4, 
+
+                <Typography
+                  variant="h2"
+                  fontWeight={1000}
+                  sx={{
+                    color: 'white',
+                    letterSpacing: -4,
                     textTransform: 'uppercase',
                     lineHeight: 0.9,
                     mb: 3,
@@ -103,26 +106,26 @@ export const ResultsOverlay: React.FC = () => {
                   {isCorrect ? 'GAGNÉ !' : 'PERDU !'}
                 </Typography>
 
-                <Typography 
-                  variant="h6" 
-                  fontWeight={800} 
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.9)', 
+                <Typography
+                  variant="h6"
+                  fontWeight={800}
+                  sx={{
+                    color: 'rgba(255,255,255,0.9)',
                     textTransform: 'uppercase',
                     fontSize: { xs: '0.9rem', sm: '1.25rem' }
                   }}
                 >
-                  {isCorrect 
-                    ? 'INCROYABLE, TU AS EU BON !' 
+                  {isCorrect
+                    ? 'INCROYABLE, TU AS EU BON !'
                     : 'DOMMAGE, TU FERAS MIEUX LA PROCHAINE FOIS.'}
                 </Typography>
 
                 {response && (
-                  <Box 
-                    sx={{ 
-                      mt: 4, 
-                      bgcolor: 'black', 
-                      color: 'white', 
+                  <Box
+                    sx={{
+                      mt: 4,
+                      bgcolor: 'black',
+                      color: 'white',
                       display: 'inline-block',
                       px: 3,
                       py: 1,
@@ -131,7 +134,7 @@ export const ResultsOverlay: React.FC = () => {
                       transform: 'rotate(2deg)'
                     }}
                   >
-                    {isCorrect ? `+${response.scoreObtained} POINTS` : '0 POINTS'}
+                    {isCorrect ? `+${response.scoreObtained ?? 1} POINTS` : '0 POINTS'}
                   </Box>
                 )}
               </>
@@ -139,11 +142,15 @@ export const ResultsOverlay: React.FC = () => {
           </Box>
         </Zoom>
 
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            mt: 4, 
-            color: 'rgba(255,255,255,0.5)', 
+        <Box sx={{ width: '100%', maxWidth: 800, mb: 6 }}>
+          <SessionLeaderboard />
+        </Box>
+
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 4,
+            color: 'rgba(255,255,255,0.5)',
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: 2

@@ -60,12 +60,6 @@ export default function GamePage() {
 
     checkAndFetch();
 
-    // Rafraichissement automatique des questions desactive temporairement
-    // const interval = setInterval(() => {
-    //   fetchSession();
-    // }, 3000);
-
-    // return () => clearInterval(interval);
   }, [code, fetchSession, getCurrentQuestion, router, status]);
 
   const handleStart = async () => {
@@ -96,90 +90,92 @@ export default function GamePage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', py: 4, background: 'white' }}>
+    <Box sx={{ minHeight: '100vh', py: 4, background: '#0A0A0B', backgroundImage: 'radial-gradient(circle at 2px 2px, #1a1a1a 1px, transparent 0)', backgroundSize: '40px 40px' }}>
       <Container maxWidth="md">
-        <Box
-          suppressHydrationWarning
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            mb: 4,
-            gap: 2,
-            width: '100%',
-            position: 'relative',
-          }}
-        >
+        {status !== 'FINISHED' && (
           <Box
+            suppressHydrationWarning
             sx={{
               display: 'flex',
-              width: '100%',
-              justifyContent: 'space-between',
+              flexDirection: 'column',
               alignItems: 'center',
-              position: { sm: 'absolute' },
-              top: { sm: 0 },
-              left: { sm: 0 },
-              height: { sm: '100%' },
-              pointerEvents: 'none',
+              mb: 4,
+              gap: 2,
+              width: '100%',
+              position: 'relative',
             }}
           >
-            <Box sx={{ pointerEvents: 'auto' }}>
-              <Button
-                label="QUITTER"
-                size="small"
-                onClick={handleQuitRequest}
-                sx={{
-                  backgroundColor: '#FF4B5C !important',
-                  color: 'white !important',
-                  borderRadius: 'var(--border-radius-sm)',
-                  fontWeight: 1000,
-                  fontSize: '0.7rem',
-                  px: 2,
-                  py: 0.5,
-                  border: '2px solid black',
-                  minWidth: '80px',
-                }}
-              />
-            </Box>
-
-            <Box sx={{ display: 'flex', pointerEvents: 'auto' }}>
-              {status === 'QUESTION_ACTIVE' ? (
-                <Box
+            <Box
+              sx={{
+                display: 'flex',
+                width: '100%',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                position: { sm: 'absolute' },
+                top: { sm: 0 },
+                left: { sm: 0 },
+                height: { sm: '100%' },
+                pointerEvents: 'none',
+              }}
+            >
+              <Box sx={{ pointerEvents: 'auto' }}>
+                <Button
+                  label="QUITTER"
+                  size="small"
+                  onClick={handleQuitRequest}
                   sx={{
-                    background: 'black',
-                    px: 1.5,
-                    py: 0.5,
+                    backgroundColor: '#FF4B5C !important',
+                    color: 'white !important',
                     borderRadius: 'var(--border-radius-sm)',
-                    color: 'white',
                     fontWeight: 1000,
-                    border: 'var(--border-main)',
-                    whiteSpace: 'nowrap',
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
+                    px: 2,
+                    py: 0.5,
+                    border: '2px solid black',
+                    minWidth: '80px',
                   }}
-                >
-                  {participants.length} JOUEURS
-                </Box>
-              ) : (
-                <Box sx={{ minWidth: { sm: '100px' } }} />
-              )}
-            </Box>
-          </Box>
+                />
+              </Box>
 
-          <Typography
-            variant="h4"
-            fontWeight={1000}
-            sx={{
-              letterSpacing: -2,
-              color: 'black',
-              textTransform: 'uppercase',
-              fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' },
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            NIGHT QUIZ
-          </Typography>
-        </Box>
+              <Box sx={{ display: 'flex', pointerEvents: 'auto' }}>
+                {status === 'QUESTION_ACTIVE' ? (
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 'var(--border-radius-sm)',
+                      color: 'black',
+                      background: 'white',
+                      fontWeight: 1000,
+                      border: 'var(--border-main)',
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    {participants.length} JOUEURS
+                  </Box>
+                ) : (
+                  <Box sx={{ minWidth: { sm: '100px' } }} />
+                )}
+              </Box>
+            </Box>
+
+            <Typography
+              variant="h4"
+              fontWeight={1000}
+              sx={{
+                letterSpacing: -2,
+                color: 'white',
+                textTransform: 'uppercase',
+                fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' },
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              NIGHT QUIZ
+            </Typography>
+          </Box>
+        )}
 
         <Fade in={true}>
           <Box>
@@ -200,8 +196,8 @@ export default function GamePage() {
                       sx={{
                         px: 8,
                         py: 2.5,
-                        background: 'black',
-                        color: 'white',
+                        background: 'white',
+                        color: 'black',
                         borderRadius: 'var(--border-radius-sm)',
                         fontWeight: 1000,
                         fontSize: '1.2rem',
@@ -225,6 +221,7 @@ export default function GamePage() {
                 {isModerator && (
                   <Box sx={{ width: '100%' }}>
                     <QuestionStatsDashboard />
+                    <SessionLeaderboard />
                     <Box mt={2} display="flex" justifyContent="center" gap={3}>
                       <Button
                         label="AFFICHER LES RÉSULTATS"
