@@ -9,7 +9,7 @@ import { useAuth } from './useAuth';
 interface GameTokenPayload {
   sessionId: string;
   participantId: string;
-  role: 'user' | 'moderator';
+  role: 'user' | 'moderator' | 'spectator';
 }
 
 interface SessionState {
@@ -20,7 +20,7 @@ interface SessionState {
   currentQuestion: Question | null;
   participants: Array<{ participant_id: string; nickname: string; role: string }>;
   participantId: string | null;
-  role: 'user' | 'moderator' | null;
+  role: 'user' | 'moderator' | 'spectator' | null;
   activatedAt: number | null;
   hasAnswered: boolean;
   resultsDisplayed: boolean;
@@ -32,7 +32,7 @@ interface SessionState {
 
   setGameToken: (token: string | null) => void;
   createSession: (quizId: string) => Promise<void>;
-  joinSession: (publicKey: string, nickname: string) => Promise<void>;
+  joinSession: (publicKey: string, nickname: string, isSpectator?: boolean) => Promise<void>;
   fetchSession: () => Promise<void>;
   startSession: () => Promise<void>;
   nextQuestion: () => Promise<void>;
@@ -150,14 +150,15 @@ export const useSession = create<SessionState>((set, get) => ({
     }
   },
 
-  joinSession: async (publicKey, nickname) => {
+  joinSession: async (publicKey, nickname, isSpectator = false) => {
     localStorage.removeItem('gameToken');
     get().reset();
     set({ loading: true, error: null });
     try {
       const res = await api.post<JoinResponse>('/sessions/join/', {
         session_public_key: publicKey,
-        participant_nickname: nickname
+        participant_nickname: nickname,
+        is_spectator: isSpectator
       });
       const { game_token } = res.data;
       get().setGameToken(game_token);
@@ -191,7 +192,7 @@ export const useSession = create<SessionState>((set, get) => ({
 
       const normalizedParticipants = res.data.participants.map(p => ({
         ...p,
-        role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : p.role)
+        role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : (p.role === 'SPECTATOR' ? 'spectator' : p.role))
       }));
 
       const me = normalizedParticipants.find(p => p.participant_id === participantId);
@@ -204,7 +205,7 @@ export const useSession = create<SessionState>((set, get) => ({
         currentQuestion: res.data.current_question !== undefined ? res.data.current_question : get().currentQuestion,
         activatedAt: res.data.activated_at || get().activatedAt,
         hasAnswered: res.data.has_answered ?? get().hasAnswered,
-        role: me ? (me.role as 'user' | 'moderator') : get().role
+        role: me ? (me.role as 'user' | 'moderator' | 'spectator') : get().role
       });
 
 
@@ -299,8 +300,8 @@ export const useSession = create<SessionState>((set, get) => ({
   addParticipant: (participant) => {
     const { participants } = get();
 
-    // Normalize role: HOST -> moderator, PLAYER -> user
-    const normalizedRole = participant.role === 'HOST' ? 'moderator' : (participant.role === 'PLAYER' ? 'user' : participant.role);
+    // Normalize role: HOST -> moderator, PLAYER -> user, SPECTATOR -> spectator
+    const normalizedRole = participant.role === 'HOST' ? 'moderator' : (participant.role === 'PLAYER' ? 'user' : (participant.role === 'SPECTATOR' ? 'spectator' : participant.role));
     const normalizedParticipant = { ...participant, role: normalizedRole };
 
     if (!participants.find((p) => p.participant_id === participant.participant_id)) {
@@ -311,7 +312,7 @@ export const useSession = create<SessionState>((set, get) => ({
   setParticipants: (participants) => {
     const normalized = participants.map(p => ({
       ...p,
-      role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : (p.role || 'user'))
+      role: p.role === 'HOST' ? 'moderator' : (p.role === 'PLAYER' ? 'user' : (p.role === 'SPECTATOR' ? 'spectator' : (p.role || 'user')))
     }));
     set({ participants: normalized });
   },

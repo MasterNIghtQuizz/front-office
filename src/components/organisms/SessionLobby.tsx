@@ -29,6 +29,8 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
 
   const myName = participants.find(p => p.participant_id === participantId)?.nickname || 'VOUS';
+  const playersCount = participants.filter(p => p.role !== 'spectator' && p.role !== 'moderator').length;
+  const spectatorsCount = participants.filter(p => p.role === 'spectator').length;
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={6} py={4}>
@@ -187,7 +189,7 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
           <Box 
             sx={{ 
               background: 'black',
-              width: 50,
+              px: 2,
               height: 50,
               borderRadius: 'var(--border-radius-sm)',
               display: 'flex',
@@ -197,10 +199,10 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
               border: 'var(--border-main)'
             }}
           >
-            <Typography variant="h5" fontWeight={1000}>{participants.length}</Typography>
+            <Typography variant="h5" fontWeight={1000}>{playersCount}</Typography>
           </Box>
           <Typography variant="h5" fontWeight={1000} sx={{ letterSpacing: -1, color: 'black' }}>
-            JOUEURS CONNECTÉS
+            JOUEURS CONNECTÉS {spectatorsCount > 0 && `(+ ${spectatorsCount} SPECTATEURS)`}
           </Typography>
         </Box>
 
@@ -235,7 +237,7 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({ publicKey, participa
                 {p.nickname.substring(0, 2).toUpperCase()}
               </Avatar>
               <Typography fontWeight={1000}>
-                {p.nickname.toUpperCase()} {p.participant_id === participantId && '(VOUS)'}
+                {p.nickname.toUpperCase()} {p.role === 'spectator' && '(SPECTATEUR)'} {p.participant_id === participantId && '(VOUS)'}
               </Typography>
             </Box>
           ))}
