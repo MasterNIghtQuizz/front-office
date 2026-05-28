@@ -18,7 +18,17 @@ function JoinForm() {
     e.preventDefault();
     if (!code || !nickname) return;
     try {
-      await joinSession(code, nickname);
+      await joinSession(code, nickname, false);
+      router.push(`/game/${code}`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleJoinAsSpectator = async () => {
+    if (!code || !nickname) return;
+    try {
+      await joinSession(code, nickname, true);
       router.push(`/game/${code}`);
     } catch (err) {
       console.error(err);
@@ -130,6 +140,26 @@ function JoinForm() {
                   border: 'var(--border-main)',
                   '&:hover': {
                     background: '#333',
+                  }
+                }}
+              />
+
+              <Button
+                type="button"
+                label={loading ? 'CONNEXION...' : 'REJOINDRE COMME SPECTATEUR'}
+                disabled={loading || !code || !nickname}
+                onClick={handleJoinAsSpectator}
+                variant="outlined"
+                sx={{
+                  py: 2,
+                  color: 'black',
+                  borderColor: 'black',
+                  borderRadius: 'var(--border-radius-sm)',
+                  borderWidth: '2px',
+                  fontWeight: 800,
+                  '&:hover': {
+                    borderWidth: '2px',
+                    background: '#f5f5f5'
                   }
                 }}
               />

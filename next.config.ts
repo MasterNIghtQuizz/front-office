@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
       form-action 'self';
       frame-ancestors 'none';
       connect-src 'self' ws: wss: http: https:;
-      upgrade-insecure-requests;
     `.replace(/\s{2,}/g, ' ').trim();
 
     return [
@@ -29,10 +28,6 @@ const nextConfig: NextConfig = {
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
           },
           {
             key: 'X-XSS-Protection',

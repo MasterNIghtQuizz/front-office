@@ -31,6 +31,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   const resultsDisplayed = useSession(state => state.resultsDisplayed);
 
   const isModerator = role === 'moderator';
+  const isSpectator = role === 'spectator';
   const isTimeUp = question.type === 'buzzer' ? resultsDisplayed : (timeLeft <= 0 || resultsDisplayed);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
 
 
   const toggleChoice = (choiceId: string) => {
-    if (hasAnswered || isTimeUp || isModerator) return;
+    if (hasAnswered || isTimeUp || isModerator || isSpectator) return;
 
     if (question.type === 'multiple') {
       setSelectedChoices(prev =>
@@ -84,6 +85,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
   };
 
   const progress = (timeLeft / question.timer_seconds) * 100;
+  const isDisabled = isTimeUp || isModerator || isSpectator || hasAnswered;
 
   return (
     <Box
@@ -201,7 +203,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                     p: 4,
                     borderRadius: 'var(--border-radius-sm)',
                     border: 'var(--border-thick)',
-                    cursor: (isTimeUp || isModerator || hasAnswered) ? 'default' : 'pointer',
+                    cursor: isDisabled ? 'default' : 'pointer',
                     bgcolor: isSelected ? 'black' : color.bg,
                     color: 'white',
                     transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -210,8 +212,8 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                     gap: 3,
                     position: 'relative',
                     '&:hover': {
-                      transform: (isTimeUp || isModerator || hasAnswered) ? 'none' : 'translateY(-6px)',
-                      boxShadow: (isTimeUp || isModerator || hasAnswered) ? 'none' : `0px 10px 0px ${isSelected ? '#333' : color.hover}`,
+                      transform: isDisabled ? 'none' : 'translateY(-6px)',
+                      boxShadow: isDisabled ? 'none' : `0px 10px 0px ${isSelected ? '#333' : color.hover}`,
                       bgcolor: isSelected ? 'black' : color.hover
                     },
                     '&:active': {
@@ -287,7 +289,7 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                   </Box>
                 </Fade>
               ) : (
-                !isModerator && (
+                (!isModerator && !isSpectator) && (
                   <BuzzerButton
                     onClick={() => onSubmit([])}
                     disabled={hasAnswered || isTimeUp}
@@ -300,11 +302,17 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                   EN ATTENTE D'UN BUZZER...
                 </Typography>
               )}
+
+              {isSpectator && !question.current_buzzer && (
+                <Typography variant="h5" fontWeight={1000} sx={{ opacity: 0.5 }}>
+                  EN ATTENTE DU BUZZER D'UN JOUEUR...
+                </Typography>
+              )}
             </Box>
           )}
         </Box>
 
-        {!isModerator && question.type !== 'buzzer' && (
+        {!isModerator && !isSpectator && question.type !== 'buzzer' && (
           <Box mt={10} display="flex" justifyContent="center">
             <Button
               label={hasAnswered ? "BIEN REÇU !" : "VALIDER MA RÉPONSE"}
@@ -329,6 +337,14 @@ export const GameCard: React.FC<GameCardProps> = ({ question, onSubmit }) => {
                 }
               }}
             />
+          </Box>
+        )}
+
+        {isSpectator && (
+          <Box mt={4} textAlign="center">
+            <Typography variant="body1" fontWeight={800} sx={{ opacity: 0.7 }}>
+              MODE SPECTATEUR - VOUS NE POUVEZ PAS RÉPONDRE
+            </Typography>
           </Box>
         )}
       </Paper>
