@@ -35,6 +35,8 @@ export const ResultsOverlay: React.FC = () => {
   if (!resultsDisplayed || role === 'moderator' || status === 'FINISHED') return null;
 
   const isCorrect = response?.isCorrect ?? false;
+  const isUser = role === 'user';
+  const isSpectator = role === 'spectator';
 
   return (
     <Fade in={resultsDisplayed}>
@@ -56,94 +58,114 @@ export const ResultsOverlay: React.FC = () => {
           overflowY: 'auto'
         }}
       >
-        <Zoom in={resultsDisplayed} style={{ transitionDelay: '300ms' }}>
-          <Box
-            sx={{
-              p: { xs: 4, sm: 6 },
-              borderRadius: 'var(--border-radius-md)',
-              background: isCorrect
-                ? 'linear-gradient(135deg, #28D07C 0%, #21B36A 100%)'
-                : 'linear-gradient(135deg, #FF4B5C 0%, #D32F2F 100%)',
-              border: '8px solid black',
-              boxShadow: '0px 30px 60px rgba(0,0,0,0.5)',
-              maxWidth: 500,
-              width: '100%',
-              transform: 'rotate(-2deg)',
-              position: 'relative',
-              mb: 8,
-              mt: 8,
-              flexShrink: 0
-            }}
-          >
-            {loading ? (
-              <CircularProgress sx={{ color: 'white' }} />
-            ) : (
-              <>
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontSize: { xs: '4rem', sm: '6rem' },
-                    mb: 2,
-                    filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.3))'
-                  }}
-                >
-                  {isCorrect ? '✨' : '💀'}
-                </Typography>
-
-                <Typography
-                  variant="h2"
-                  fontWeight={1000}
-                  sx={{
-                    color: 'white',
-                    letterSpacing: -4,
-                    textTransform: 'uppercase',
-                    lineHeight: 0.9,
-                    mb: 3,
-                    textShadow: '4px 4px 0px black',
-                    fontSize: { xs: '3rem', sm: '4rem' }
-                  }}
-                >
-                  {isCorrect ? 'GAGNÉ !' : 'PERDU !'}
-                </Typography>
-
-                <Typography
-                  variant="h6"
-                  fontWeight={800}
-                  sx={{
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    fontSize: { xs: '0.9rem', sm: '1.25rem' }
-                  }}
-                >
-                  {isCorrect
-                    ? 'INCROYABLE, TU AS EU BON !'
-                    : 'DOMMAGE, TU FERAS MIEUX LA PROCHAINE FOIS.'}
-                </Typography>
-
-                {response && (
-                  <Box
+        {isUser && (
+          <Zoom in={resultsDisplayed} style={{ transitionDelay: '300ms' }}>
+            <Box
+              sx={{
+                p: { xs: 4, sm: 6 },
+                borderRadius: 'var(--border-radius-md)',
+                background: isCorrect
+                  ? 'linear-gradient(135deg, #28D07C 0%, #21B36A 100%)'
+                  : 'linear-gradient(135deg, #FF4B5C 0%, #D32F2F 100%)',
+                border: '8px solid black',
+                boxShadow: '0px 30px 60px rgba(0,0,0,0.5)',
+                maxWidth: 500,
+                width: '100%',
+                transform: 'rotate(-2deg)',
+                position: 'relative',
+                mb: 8,
+                mt: 8,
+                flexShrink: 0
+              }}
+            >
+              {loading ? (
+                <CircularProgress sx={{ color: 'white' }} />
+              ) : (
+                <>
+                  <Typography
+                    variant="h1"
                     sx={{
-                      mt: 4,
-                      bgcolor: isCorrect ? 'black' : 'white',
-                      color: isCorrect ? 'white' : '#FF4B5C',
-                      display: 'inline-block',
-                      px: 3,
-                      py: 1,
-                      borderRadius: 'var(--border-radius-sm)',
-                      fontWeight: 1000,
-                      transform: 'rotate(2deg)',
-                      border: isCorrect ? 'none' : '4px solid #FF4B5C'
+                      fontSize: { xs: '4rem', sm: '6rem' },
+                      mb: 2,
+                      filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.3))'
                     }}
                   >
-                    {isCorrect 
-                      ? `+${currentQuestion?.type === 'buzzer' ? 2 : 1} POINT${currentQuestion?.type === 'buzzer' ? 'S' : ''}` 
-                      : '-1 POINT'}
-                  </Box>
-                )}
-              </>
-            )}
+                    {isCorrect ? '✨' : '💀'}
+                  </Typography>
+
+                  <Typography
+                    variant="h2"
+                    fontWeight={1000}
+                    sx={{
+                      color: 'white',
+                      letterSpacing: -4,
+                      textTransform: 'uppercase',
+                      lineHeight: 0.9,
+                      mb: 3,
+                      textShadow: '4px 4px 0px black',
+                      fontSize: { xs: '3rem', sm: '4rem' }
+                    }}
+                  >
+                    {isCorrect ? 'GAGNÉ !' : 'PERDU !'}
+                  </Typography>
+
+                  <Typography
+                    variant="h6"
+                    fontWeight={800}
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      textTransform: 'uppercase',
+                      fontSize: { xs: '0.9rem', sm: '1.25rem' }
+                    }}
+                  >
+                    {isCorrect
+                      ? 'INCROYABLE, TU AS EU BON !'
+                      : 'DOMMAGE, TU FERAS MIEUX LA PROCHAINE FOIS.'}
+                  </Typography>
+
+                  {response && (
+                    <Box
+                      sx={{
+                        mt: 4,
+                        bgcolor: isCorrect ? 'black' : 'white',
+                        color: isCorrect ? 'white' : '#FF4B5C',
+                        display: 'inline-block',
+                        px: 3,
+                        py: 1,
+                        borderRadius: 'var(--border-radius-sm)',
+                        fontWeight: 1000,
+                        transform: 'rotate(2deg)',
+                        border: isCorrect ? 'none' : '4px solid #FF4B5C'
+                      }}
+                    >
+                      {isCorrect 
+                        ? `+${currentQuestion?.type === 'buzzer' ? 2 : 1} POINT${currentQuestion?.type === 'buzzer' ? 'S' : ''}` 
+                        : '-1 POINT'}
+                    </Box>
+                  )}
+                </>
+              )}
+            </Box>
+          </Zoom>
+        )}
+
+        {isSpectator && (
+          <Box sx={{ mb: 12, mt: 8, textAlign: 'center' }}>
+            <Typography 
+              variant="h2" 
+              fontWeight={1000} 
+              sx={{ 
+                letterSpacing: -2, 
+                textTransform: 'uppercase',
+                color: 'black',
+                fontSize: { xs: '2.5rem', sm: '3.5rem' },
+                lineHeight: 1
+              }}
+            >
+              RÉSULTATS DE<br />LA QUESTION
+            </Typography>
           </Box>
-        </Zoom>
+        )}
 
         <Box sx={{ width: '100%', maxWidth: 800, mb: 6 }}>
           <SessionLeaderboard />
